@@ -9,94 +9,86 @@ We are going to build a visual computing system that evaluates how different con
 
 We will demonstrate success by performing a “generative reconstruction” task on a standard image dataset, where the system attempts to recreate a given target image using different forms of user input. Our approach includes an interactive feedback loop that allows iterative refinement of inputs and outputs. By the end of the project, we will provide a comparative analysis of modality efficacy using perceptual and semantic metrics, identifying which input modalities best capture and communicate user intent in generative systems.
 
-## Inputs and Outputs
+## Research Questions & Goals
+Our project aims to answer the following core questions:
+- Perceptual Efficacy: Which single modality (Text Prompts, Canny Edge Maps, or Semantic Segmentation Masks) yields the highest perceptual similarity to the original target image?
+- Multi-modal Synergy: Does combining a semantic modality (Text) with a structural modality (Edge/Mask) statistically improve reconstruction fidelity compared to using a single modality?
+- Semantic vs. Structural Trade-offs: At what point do strict structural constraints degrade the generative model's ability to render perceptually realistic textures?
+
+## Experimental Design & Success Criteria
+To answer these questions, we will conduct a series of reconstruction experiments.
+
+### The Experiment:
+For a sampled subset of target images, we will extract ground-truth conditioning data and attempt a generative reconstruction using four distinct configurations:
+1. Baseline Semantic: Text Prompt Only
+2. Baseline Structural: Canny Edge Map Only
+3. Multi-modal A: Text Prompt + Canny Edge Map
+4. Multi-modal B: Text Prompt + Semantic Segmentation Mask
+
+### Success Criteria:
+We will know the experiment is successful when we can produce a robust comparative analysis cross-referencing our generated outputs against the original target images. Success does not mean "perfect" reconstructions; it means our evaluation pipeline can definitively measure and rank the efficacy of each modality setup.
+- Checkpoint 1 Success: Our evaluation code is functional and can definitively identify failed generations (e.g., scoring empty pictures or white noise heavily negatively compared to the target).
+- Final Success: A comprehensive set of plots (Modality vs. LPIPS, Modality vs. CLIP-score) proving which input method best captures user intent.
+
+## System Architecture
 
 ### Inputs
-- Target images from a standard dataset (e.g., FFHQ or similar)
-- Conditioning modalities:
-    - Text prompts (semantic descriptions)
-    - Spatial layouts (masks, bounding boxes, or structure maps)
-    - Combined multi-modal inputs
-- Pretrained generative image models (e.g., diffusion-based models)
+Target Datasets:
+- COCO: For evaluating complex, multi-object compositional intent and region-based masks.
+- FFHQ: For evaluating fine-grained texture reconstruction in a structurally consistent domain.
+
+Conditioning Modalities:
+- Ground-truth dataset captions (Text)
+- Extracted Canny edge maps (High-frequency structure)
+- Extracted Semantic segmentation masks (Region-based layout)
+
+Generative Core: 
+- Stable Diffusion 1.5 + ControlNet (Weights frozen).
 
 ### Outputs
-- Reconstructed images under different conditioning modalities
-- Quantitative evaluation metrics:
-    - LPIPS (perceptual similarity)
-    - CLIP-score (semantic alignment)
-    - Pixel-level reconstruction error (optional)
-- Comparative analysis plots:
-    - Modality vs reconstruction accuracy
-    - Single-modality vs multi-modal performance
-- Visual comparisons (target vs reconstructions)
+Qualitative Analysis:
+- Reconstructed images for each modality configuration.
+- Visual comparisons (target vs reconstructions).
 
-### Constraints
-- Limited control over pretrained model internals
-- Ambiguity in mapping user intent to model inputs
-- Computational cost of iterative sampling and evaluation
-- Tradeoff between perceptual realism and reconstruction fidelity
+Quantitative Evaluation Metrics:
+- LPIPS: For measuring human perceptual similarity.
+- CLIP-Score: For measuring semantic alignment with the ground-truth text.
+- DreamSim: For measuring mid-level structural and perceptual similarity (e.g., spatial layout, object pose, and intent alignment) without being penalized by strict pixel-level deviations.
 
-## Task List
 
-### Core Tasks
-#### 1. Baseline Setup
-- Select a pretrained generative image model
-- Build an end-to-end pipeline for image generation
-- Verify correct reconstruction behavior from basic inputs
+## Implementation Roadmap
 
-#### 2. Conditioning Interface Design
-- Implement different input modalities:
-    - Text-based prompts
-    - Spatial layouts (e.g., masks or structure constraints)
-    - Multi-modal combinations
-- Standardize input formats for fair comparison
+### Phase 1: Evaluation Pipeline MVP
 
-#### 3. Generative Reconstruction Pipeline
-- Define a reconstruction task:
-    - Given a target image, generate inputs that attempt to reproduce it
-- Run reconstruction under different modality settings
-- Ensure consistent sampling and evaluation across experiments
+- [ ] Initialize LPIPS, CLIP-score, and DreamSim metric functions.
 
-#### 4. Interactive Feedback Loop
-- Design a loop where:
-    - Outputs are evaluated against the target
-    - Inputs are iteratively refined (e.g., prompt adjustment, layout updates)
-- Analyze how feedback improves reconstruction quality
+- [ ] Build a trivial baseline testing script.
 
-#### 5. Evaluation Framework
-- Compute perceptual and semantic metrics:
-    - LPIPS for visual similarity
-    - CLIP-score for semantic alignment
-- Aggregate results across modalities and datasets
-- Generate comparison plots and visual summaries
+- [ ] Verify the evaluation code correctly penalizes random noise and blank canvases against a target image.
+
+- [ ] Standardize the data loader to extract target images and their corresponding ground-truth text captions (e.g., COCO JSON parsing).
+
+### Phase 2: Conditioning Interface & Generative Setup
+
+- [ ] Set up the Stable Diffusion 1.5 + ControlNet pipeline.
+
+- [ ] Implement extraction scripts for spatial modalities (Canny edge detection and Segmentation map generation from target images).
+
+- [ ] Run initial generation passes using single modalities to verify the pipeline is connected.
+
+### Phase 3: Generative Reconstruction & Analysis
+
+- [ ] Execute the full suite of four experimental configurations across the dataset subsets.
+
+- [ ] Implement the interactive feedback loop: evaluate outputs against targets and iteratively refine the conditioning inputs (e.g., prompt adjustment).
+
+- [ ] Aggregate results and generate comparative plots (LPIPS vs. Modality, etc.).
 
 ### Nice-to-Haves
 - Extension to video reconstruction (if compute allows)
 - Automated prompt refinement or suggestion system
 - Visualization tools for comparing modality contributions
 - User study to evaluate perceived controllability
-
-## Expected Deliverables and Evaluation
-
-### Deliverables
-- Side-by-side visual comparisons of reconstruction results
-- Plots comparing modality performance:
-    - LPIPS vs modality
-    - CLIP-score vs modality
-- Analysis of single vs multi-modal conditioning
-- Demonstration of the interactive feedback system
-
-### Evaluation Questions
-- Which modality best captures user intent for reconstruction tasks?
-- How do spatial constraints compare to semantic prompts?
-- Does combining modalities significantly improve performance?
-- How does iterative feedback affect reconstruction quality?
-
-### Success Criteria
-- Clear differences observed between conditioning modalities
-- Demonstrated improvement using multi-modal inputs
-- Effective use of feedback loop to refine outputs
-- Insightful analysis of modality strengths and limitations
 
 ## Risks and Mitigation
 **Difficulty controlling pretrained model outputs**
