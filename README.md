@@ -19,11 +19,23 @@ Our project aims to answer the following core questions:
 To answer these questions, we will conduct a series of reconstruction experiments.
 
 ### The Experiment:
-For a sampled subset of target images, we will extract ground-truth conditioning data and attempt a generative reconstruction using four distinct configurations:
-1. Baseline Semantic: Text Prompt Only
-2. Baseline Structural: Canny Edge Map Only
-3. Multi-modal A: Text Prompt + Canny Edge Map
-4. Multi-modal B: Text Prompt + Semantic Segmentation Mask
+To isolate the efficacy of each modality, we categorize our text inputs into two tiers:
+- Dense Text (Spatial): Highly descriptive captions explicitly detailing spatial relationships (e.g., "A yellow banana resting on top of a wooden table").
+- Sparse Text (Semantic): Simplified entity lists stripping away spatial context (e.g., "A banana, a table").
+
+For a sampled subset of target images, we will extract ground-truth conditioning data and attempt a generative reconstruction using the following configurations:
+1. Baseline Semantic: Sparse Text Prompt.
+2. Advanced Semantic: Dense Text Prompt.
+3. Baseline Structural A: Empty/Sparse Text Prompt + Canny Edge Map.
+4. Baseline Structural B: Empty/Sparse Text Prompt + Semantic Segmentation Mask.
+5. Multi-modal A: Dense Text Prompt + Canny Edge Map.
+6. Multi-modal B: Dense Text Prompt + Semantic Segmentation Mask (To observe if redundant spatial instructions degrade quality).
+
+Hyperparameter Sweeps (Intent Guidance):
+
+To measure how forcefully the model applies our inputs, we will evaluate the above configurations across varied scales of Classifier-Free Guidance (CFG). We will test outputs at a low CFG (e.g., 3.0 - allowing model prior to dominate) and a high CFG (e.g., 7.5 to 10.0 - forcing strict adherence to the input intent).
+
+Note: We will similarly adjust the ControlNet Conditioning Scale when evaluating structural modalities to find the optimal balance between text intent and structural intent.
 
 ### Success Criteria:
 We will know the experiment is successful when we can produce a robust comparative analysis cross-referencing our generated outputs against the original target images. Success does not mean "perfect" reconstructions; it means our evaluation pipeline can definitively measure and rank the efficacy of each modality setup.
@@ -35,7 +47,7 @@ We will know the experiment is successful when we can produce a robust comparati
 ### Inputs
 Target Datasets:
 - COCO: For evaluating complex, multi-object compositional intent and region-based masks.
-- FFHQ: For evaluating fine-grained texture reconstruction in a structurally consistent domain.
+- LAION (if resources allow): As it is a much larger dataset, we will incorporate it to evaluate broad, unconstrained generative capabilities across a massive variety of subjects and structural compositions if computational limits permit.
 
 Conditioning Modalities:
 - Ground-truth dataset captions (Text)
@@ -43,7 +55,8 @@ Conditioning Modalities:
 - Extracted Semantic segmentation masks (Region-based layout)
 
 Generative Core: 
-- Stable Diffusion 1.5 + ControlNet (Weights frozen).
+- Stable Diffusion 1.5 + ControlNet (Weights frozen): Given limited computational resources, we decided to start with this architecture. Although its performance is not the state of the art now, it provides a well-documented and controllable baseline.
+- Advanced Models (if resources allow): We will also try evaluating on more advanced state-of-the-art models such as Flux, Hunyuan-image, and Qwen-image.
 
 ### Outputs
 Qualitative Analysis:
