@@ -112,6 +112,15 @@ Run from the repo root so relative paths resolve:
 python evaluation.py
 ```
 
+### `select_data.py`
+
+Heuristic selection of data from the downloaded set with rich features and objects, clear canny edges, and detailed captions.
+
+### `run_controlnet_canny.py`
+
+Tests image reconstruction using pretrained models from ControlNet using the modality of canny edge detection.
+
+
 **Dependencies:** Reproduce the conda environment from the pinned spec at [`environment.yml`](environment.yml):
 
 ```bash
