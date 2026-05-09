@@ -133,6 +133,8 @@ The file pins package builds for reproducibility. Otherwise, you need roughly: P
 
 - [x] Standardize the data loader to extract target images and their corresponding ground-truth text captions (e.g., COCO JSON parsing).
 
+- [x] Selected 40 images from the COCO dataset with rich features and objects, clear canny edges, and detailed captions.
+
 ### Phase 2: Conditioning Interface & Generative Setup
 
 - [ ] Set up the Stable Diffusion 1.5 + ControlNet pipeline.
