@@ -15,33 +15,6 @@ Our project aims to answer the following core questions:
 - Multi-modal Synergy: Does combining a semantic modality (Text) with a structural modality (Edge/Mask) statistically improve reconstruction fidelity compared to using a single modality?
 - Semantic vs. Structural Trade-offs: At what point do strict structural constraints degrade the generative model's ability to render perceptually realistic textures?
 
-## Experimental Design & Success Criteria
-To answer these questions, we will conduct a series of reconstruction experiments.
-
-### The Experiment:
-To isolate the efficacy of each modality, we categorize our text inputs into two tiers:
-- Dense Text (Spatial): Highly descriptive captions explicitly detailing spatial relationships (e.g., "A yellow banana resting on top of a wooden table").
-- Sparse Text (Semantic): Simplified entity lists stripping away spatial context (e.g., "A banana, a table").
-
-For a sampled subset of target images, we will extract ground-truth conditioning data and attempt a generative reconstruction using the following configurations:
-1. Baseline Semantic: Sparse Text Prompt.
-2. Advanced Semantic: Dense Text Prompt.
-3. Baseline Structural A: Empty/Sparse Text Prompt + Canny Edge Map.
-4. Baseline Structural B: Empty/Sparse Text Prompt + Semantic Segmentation Mask.
-5. Multi-modal A: Dense Text Prompt + Canny Edge Map.
-6. Multi-modal B: Dense Text Prompt + Semantic Segmentation Mask (To observe if redundant spatial instructions degrade quality).
-
-Hyperparameter Sweeps (Intent Guidance):
-
-To measure how forcefully the model applies our inputs, we will evaluate the above configurations across varied scales of Classifier-Free Guidance (CFG). We will test outputs at a low CFG (e.g., 3.0 - allowing model prior to dominate) and a high CFG (e.g., 7.5 to 10.0 - forcing strict adherence to the input intent).
-
-Note: We will similarly adjust the ControlNet Conditioning Scale when evaluating structural modalities to find the optimal balance between text intent and structural intent.
-
-### Success Criteria:
-We will know the experiment is successful when we can produce a robust comparative analysis cross-referencing our generated outputs against the original target images. Success does not mean "perfect" reconstructions; it means our evaluation pipeline can definitively measure and rank the efficacy of each modality setup.
-- Checkpoint 1 Success: Our evaluation code is functional and can definitively identify failed generations (e.g., scoring empty pictures or white noise heavily negatively compared to the target).
-- Final Success: A comprehensive set of plots (Modality vs. LPIPS, Modality vs. CLIP-score) proving which input method best captures user intent.
-
 ## System Architecture
 
 ### Inputs
@@ -68,67 +41,33 @@ Quantitative Evaluation Metrics:
 - CLIP-Score: For measuring semantic alignment with the ground-truth text.
 - DreamSim: For measuring mid-level structural and perceptual similarity (e.g., spatial layout, object pose, and intent alignment) without being penalized by strict pixel-level deviations.
 
-## Repository Layout
 
-Top-level layout (paths are relative to the project root):
+## Experimental Design & Success Criteria
+To answer these questions, we will conduct a series of reconstruction experiments.
 
-```
-cs348k_proj/
-├── data/coco/
-│   ├── info.json                 # Metadata for the local COCO subset (e.g. FiftyOne export: split, sample count)
-│   ├── raw/                      # Official COCO annotation JSON
-│   │   ├── captions_val2017.json   # Used by the evaluation script for captions
-│   │   ├── instances_*.json
-│   │   └── person_keypoints_*.json
-│   └── validation/
-│       └── data/                 # Validation images aligned with COCO val IDs
-├── download.py                   # Pulls COCO-2017 validation subset via FiftyOne
-├── evaluation.py                 # Metric stack + trivial baselines
-├── logs/                         # Log files for evaluation metrics
-└── models/                       # Local pretrained weights (CLIP/DINO/DreamSim-related assets, etc.)
-```
+### The Experiment:
+To isolate the efficacy of each modality, we categorize our text inputs into two tiers:
+- Dense Text (Spatial): Highly descriptive captions explicitly detailing spatial relationships (e.g., "A yellow banana resting on top of a wooden table").
+- Sparse Text (Semantic): Simplified entity lists stripping away spatial context (e.g., "A banana, a table").
 
+For a sampled subset of target images, we will extract ground-truth conditioning data and attempt a generative reconstruction using the following configurations:
+1. Baseline Semantic: Sparse Text Prompt.
+2. Advanced Semantic: Dense Text Prompt.
+3. Baseline Structural A: Empty/Sparse Text Prompt + Canny Edge Map.
+4. Baseline Structural B: Empty/Sparse Text Prompt + Semantic Segmentation Mask.
+5. Multi-modal A: Dense Text Prompt + Canny Edge Map.
+6. Multi-modal B: Dense Text Prompt + Semantic Segmentation Mask (To observe if redundant spatial instructions degrade quality).
 
-## Scripts
+Hyperparameter Sweeps (Intent Guidance):
 
-### `download.py`
+To measure how forcefully the model applies our inputs, we will evaluate the above configurations across varied scales of Classifier-Free Guidance (CFG). We will test outputs at a low CFG (e.g., 3.0 - allowing model prior to dominate) and a high CFG (e.g., 7.5 to 10.0 - forcing strict adherence to the input intent).
 
-Loads a small COCO-2017 **validation** split through [FiftyOne](https://voxel51.com/docs/fiftyone/) (`fiftyone.zoo.load_zoo_dataset("coco-2017", split="validation", max_samples=100)`). Use this if you need to (re)populate `data/coco/`; it requires a working FiftyOne install and sufficient disk space for the zoo download.
+Note: We will similarly adjust the ControlNet Conditioning Scale when evaluating structural modalities to find the optimal balance between text intent and structural intent.
 
-### `evaluation.py`
-
-Baseline **evaluation pipeline** for the three metrics above:
-
-- Loads the first COCO validation sample (image + captions) via `torchvision.datasets.CocoCaptions`.
-- Uses the **first caption** as ground-truth text for CLIP-Score.
-- Runs three checks: target vs. itself (sanity / “perfect” baseline), target vs. **random noise**, and target vs. **blank white** image.
-- Writes artifacts under `logs/`:
-  - **`evaluation_N.log`** — console-style transcript.
-  - **`evaluation_N.json`** — same run, structured (`started_at`, `finished_at`, `caption`, and per-baseline metric dicts).
-
-Run from the repo root so relative paths resolve:
-
-```bash
-python evaluation.py
-```
-
-### `select_data.py`
-
-Heuristic selection of data from the downloaded set with rich features and objects, clear canny edges, and detailed captions.
-
-### `run_controlnet_canny.py`
-
-Tests image reconstruction using pretrained models from ControlNet using the modality of canny edge detection.
-
-
-**Dependencies:** Reproduce the conda environment from the pinned spec at [`environment.yml`](environment.yml):
-
-```bash
-conda env create -f environment.yml   # once
-conda activate cs348k
-```
-
-The file pins package builds for reproducibility. Otherwise, you need roughly: PyTorch and matching `torchvision`/`torchaudio`, `torchvision` (COCO loader), `lpips`, `torchmetrics` (CLIP-Score), `transformers` + Hugging Face CLIP weights (safetensors when available), and `dreamsim`. First CLIP/DreamSim runs may download weights; ensure PyTorch and `torchvision` versions are paired to avoid native-op errors.
+### Success Criteria:
+We will know the experiment is successful when we can produce a robust comparative analysis cross-referencing our generated outputs against the original target images. Success does not mean "perfect" reconstructions; it means our evaluation pipeline can definitively measure and rank the efficacy of each modality setup.
+- Checkpoint 1 Success: Our evaluation code is functional and can definitively identify failed generations (e.g., scoring empty pictures or white noise heavily negatively compared to the target).
+- Final Success: A comprehensive set of plots (Modality vs. LPIPS, Modality vs. CLIP-score) proving which input method best captures user intent.
 
 ## Implementation Roadmap
 
@@ -165,6 +104,71 @@ The file pins package builds for reproducibility. Otherwise, you need roughly: P
 - Automated prompt refinement or suggestion system
 - Visualization tools for comparing modality contributions
 - User study to evaluate perceived controllability
+
+## Repository Layout
+
+Top-level layout (paths are relative to the project root):
+
+```
+cs348k_proj/
+├── data/coco/
+│   ├── info.json                 # Metadata for the local COCO subset (e.g. FiftyOne export: split, sample count)
+│   ├── raw/                      # Official COCO annotation JSON
+│   │   ├── captions_val2017.json   # Used by the evaluation script for captions
+│   │   ├── instances_*.json
+│   │   └── person_keypoints_*.json
+│   └── validation/
+│       └── data/                 # Validation images aligned with COCO val IDs
+├── data/selected                 # Selected images by the heuristic
+├── download.py                   # Pulls COCO-2017 validation subset via FiftyOne
+├── evaluation.py                 # Metric stack + trivial baselines
+├── run_controlnet_canny.py       # Runs ControlNet pipeline with Canny edge map
+├── select_data.py                # Heuristic selection of data from downloaded set
+├── logs/                         # Log files for evaluation metrics
+├── outputs/controlnet_canny      # Generated images by ControlNet
+└── models/                       # Local pretrained weights (CLIP/DINO/DreamSim-related assets, etc.)
+```
+
+
+## Scripts
+
+### `download.py`
+
+Loads a small COCO-2017 **validation** split through [FiftyOne](https://voxel51.com/docs/fiftyone/) (`fiftyone.zoo.load_zoo_dataset("coco-2017", split="validation", max_samples=100)`). Use this if you need to (re)populate `data/coco/`; it requires a working FiftyOne install and sufficient disk space for the zoo download.
+
+### `evaluation.py`
+
+Baseline **evaluation pipeline** for the three metrics above:
+
+- Loads the first COCO validation sample (image + captions) via `torchvision.datasets.CocoCaptions`.
+- Uses the **first caption** as ground-truth text for CLIP-Score.
+- Runs three checks: target vs. itself (sanity / “perfect” baseline), target vs. **random noise**, and target vs. **blank white** image.
+- Writes artifacts under `logs/`.
+
+Run from the repo root so relative paths resolve:
+
+```bash
+python evaluation.py
+```
+
+### `select_data.py`
+
+Heuristic selection of data from the downloaded set with rich features and objects, clear canny edges, and detailed captions.
+
+### `run_controlnet_canny.py`
+
+Tests image reconstruction using pretrained models from ControlNet using the modality of canny edge detection.
+
+
+**Dependencies:** Reproduce the conda environment from the pinned spec at [`environment.yml`](environment.yml):
+
+```bash
+conda env create -f environment.yml   # once
+conda activate cs348k
+```
+
+The file pins package builds for reproducibility. Otherwise, you need roughly: PyTorch and matching `torchvision`/`torchaudio`, `torchvision` (COCO loader), `lpips`, `torchmetrics` (CLIP-Score), `transformers` + Hugging Face CLIP weights (safetensors when available), and `dreamsim`. First CLIP/DreamSim runs may download weights; ensure PyTorch and `torchvision` versions are paired to avoid native-op errors.
+
 
 ## Risks and Mitigation
 **Difficulty controlling pretrained model outputs**
