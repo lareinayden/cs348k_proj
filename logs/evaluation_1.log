@@ -1,0 +1,15 @@
+Log file: /Users/yixiaoz/Desktop/cs348k_proj/logs/evaluation_1.log
+Loading COCO Dataset...
+Target Caption: 'A woman stands in the dining area at the table.'
+Initializing metrics on mps...
+
+--- Evaluating Target vs Itself (Perfect Baseline) ---
+{"LPIPS_Distance": 0.0, "DreamSim_Distance": 0.0, "CLIP_Score": 26.4882}
+
+--- Evaluating Target vs Random Noise ---
+{"LPIPS_Distance": 0.8851, "DreamSim_Distance": 0.9003, "CLIP_Score": 20.5104}
+
+--- Evaluating Target vs Blank Canvas ---
+{"LPIPS_Distance": 0.8382, "DreamSim_Distance": 0.9278, "CLIP_Score": 20.3887}
+
+Structured summary: /Users/yixiaoz/Desktop/cs348k_proj/logs/evaluation_1.json

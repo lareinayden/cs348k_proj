@@ -68,18 +68,70 @@ Quantitative Evaluation Metrics:
 - CLIP-Score: For measuring semantic alignment with the ground-truth text.
 - DreamSim: For measuring mid-level structural and perceptual similarity (e.g., spatial layout, object pose, and intent alignment) without being penalized by strict pixel-level deviations.
 
+## Repository Layout
+
+Top-level layout (paths are relative to the project root):
+
+```
+cs348k_proj/
+├── data/coco/
+│   ├── info.json                 # Metadata for the local COCO subset (e.g. FiftyOne export: split, sample count)
+│   ├── raw/                      # Official COCO annotation JSON
+│   │   ├── captions_val2017.json   # Used by the evaluation script for captions
+│   │   ├── instances_*.json
+│   │   └── person_keypoints_*.json
+│   └── validation/
+│       └── data/                 # Validation images aligned with COCO val IDs
+├── download.py                   # Pulls COCO-2017 validation subset via FiftyOne
+├── evaluation.py                 # Metric stack + trivial baselines
+├── logs/                         # Log files for evaluation metrics
+└── models/                       # Local pretrained weights (CLIP/DINO/DreamSim-related assets, etc.)
+```
+
+
+## Scripts
+
+### `download.py`
+
+Loads a small COCO-2017 **validation** split through [FiftyOne](https://voxel51.com/docs/fiftyone/) (`fiftyone.zoo.load_zoo_dataset("coco-2017", split="validation", max_samples=100)`). Use this if you need to (re)populate `data/coco/`; it requires a working FiftyOne install and sufficient disk space for the zoo download.
+
+### `evaluation.py`
+
+Baseline **evaluation pipeline** for the three metrics above:
+
+- Loads the first COCO validation sample (image + captions) via `torchvision.datasets.CocoCaptions`.
+- Uses the **first caption** as ground-truth text for CLIP-Score.
+- Runs three checks: target vs. itself (sanity / “perfect” baseline), target vs. **random noise**, and target vs. **blank white** image.
+- Writes artifacts under `logs/`:
+  - **`evaluation_N.log`** — console-style transcript.
+  - **`evaluation_N.json`** — same run, structured (`started_at`, `finished_at`, `caption`, and per-baseline metric dicts).
+
+Run from the repo root so relative paths resolve:
+
+```bash
+python evaluation.py
+```
+
+**Dependencies:** Reproduce the conda environment from the pinned spec at [`environment.yml`](environment.yml):
+
+```bash
+conda env create -f environment.yml   # once
+conda activate cs348k
+```
+
+The file pins package builds for reproducibility. Otherwise, you need roughly: PyTorch and matching `torchvision`/`torchaudio`, `torchvision` (COCO loader), `lpips`, `torchmetrics` (CLIP-Score), `transformers` + Hugging Face CLIP weights (safetensors when available), and `dreamsim`. First CLIP/DreamSim runs may download weights; ensure PyTorch and `torchvision` versions are paired to avoid native-op errors.
 
 ## Implementation Roadmap
 
 ### Phase 1: Evaluation Pipeline MVP
 
-- [ ] Initialize LPIPS, CLIP-score, and DreamSim metric functions.
+- [x] Initialize LPIPS, CLIP-score, and DreamSim metric functions.
 
-- [ ] Build a trivial baseline testing script.
+- [x] Build a trivial baseline testing script.
 
-- [ ] Verify the evaluation code correctly penalizes random noise and blank canvases against a target image.
+- [x] Verify the evaluation code correctly penalizes random noise and blank canvases against a target image.
 
-- [ ] Standardize the data loader to extract target images and their corresponding ground-truth text captions (e.g., COCO JSON parsing).
+- [x] Standardize the data loader to extract target images and their corresponding ground-truth text captions (e.g., COCO JSON parsing).
 
 ### Phase 2: Conditioning Interface & Generative Setup
 

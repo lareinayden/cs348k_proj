@@ -1,0 +1,22 @@
+{
+  "started_at": "2026-05-08T16:57:58",
+  "runs": {
+    "perfect_baseline": {
+      "LPIPS_Distance": 0.0,
+      "DreamSim_Distance": 0.0,
+      "CLIP_Score": 26.4882
+    },
+    "noise_baseline": {
+      "LPIPS_Distance": 0.8851,
+      "DreamSim_Distance": 0.9003,
+      "CLIP_Score": 20.5104
+    },
+    "blank_baseline": {
+      "LPIPS_Distance": 0.8382,
+      "DreamSim_Distance": 0.9278,
+      "CLIP_Score": 20.3887
+    }
+  },
+  "caption": "A woman stands in the dining area at the table.",
+  "finished_at": "2026-05-08T16:58:04"
+}
