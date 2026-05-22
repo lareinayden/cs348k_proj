@@ -70,18 +70,21 @@ Evaluations run on the **40-image COCO subset** (`data/selected`) against each t
 
 | ID | Configuration | Text conditioning | Structural conditioning | CFG | ControlNet scale | LPIPS ↓ | CLIP-Score ↑ | DreamSim ↓ | Notes |
 |:--:|---------------|---------------------|-------------------------|-----|------------------|:-------:|:------------:|:----------:|-------|
-| 1 | Baseline Semantic | Sparse | — | | | | | | |
-| 2 | Advanced Semantic | Dense | — | | | | | | |
-| 3 | Baseline Structural A | Sparse / empty | Canny edge map | | | | | | |
+| 1 | Baseline Semantic: Sparse Text | Sparse | — | 7.5 | — | 0.754 | 24.09 | 0.662 | 40-image mean; `logs/baseline_semantic_sparse_results.csv` |
+| 2 | Advanced Semantic: Dense Text | Dense | — | 7.5 | — | 0.752 | 31.30 | 0.544 | 40-image mean; `logs/baseline_semantic_dense_results.csv` |
+| 3 | Baseline Structural A | Empty | Canny edge map | 7.5 | 1.0 | 0.561 | 25.45 | 0.459 | 40-image mean; `logs/baseline_structural_canny_results.csv` |
 | 4 | Baseline Structural B | Sparse / empty | Segmentation mask | | | | | | |
 | 5 | Multi-modal A | Dense | Canny edge map | 7.5 | 1.0 | 0.533 | 30.62 | 0.357 | 40-image mean; see `logs/controlnet_canny_results.csv` |
 | 6 | Multi-modal B | Dense | Segmentation mask | | | | | | |
 
 *CFG and ControlNet scale columns: report the setting used per run (e.g., low CFG ≈ 3.0, high CFG ≈ 7.5–10.0; structural configs sweep ControlNet conditioning scale).*
 
-**Config 5 run details** (`dense_text_plus_canny`, SD 1.5 + ControlNet-Canny, `scripts/run_controlnet_canny_batch.py`): mean ± std over **n = 40** — LPIPS **0.533 ± 0.064**, DreamSim **0.357 ± 0.093**, CLIP-Score **30.62 ± 3.00**. Best DreamSim: **0.073** (image `000000001584`); highest LPIPS: **0.663** (image `000000000139`). Qualitative outputs: `outputs/controlnet_canny/<coco_id>/` (`target.png`, `canny.png`, `generated.png`).
+**Cross-config takeaways:**
+- **Structure vs. text alone:** Empty + Canny (3) lowers LPIPS **~0.75 → 0.56** and DreamSim **~0.60 → 0.46** vs. both text-only configs.
+- **Multi-modal synergy (5 vs. 3):** Adding dense text to Canny improves CLIP **25.5 → 30.6** and perceptual metrics modestly (LPIPS **0.561 → 0.533**, DreamSim **0.459 → 0.357**). Gains are not only from edges—caption helps semantics and refinement.
+- **Best overall so far:** Config **5** on all three metrics among completed runs.
 
-**Checkpoint 1 reference** (single image; `logs/evaluation_1.json`): target vs. itself — LPIPS 0.00, DreamSim 0.00; vs. noise — 0.89 / 0.90; vs. blank — 0.84 / 0.93. Config 5 scores sit between perfect and failed baselines on perceptual metrics, with much higher CLIP-Score than noise/blank (~20).
+**Checkpoint 1 reference** (single image; `logs/evaluation_1.json`): target vs. itself — LPIPS 0.00, DreamSim 0.00; vs. noise — 0.89 / 0.90; vs. blank — 0.84 / 0.93. All generative configs beat trivial failure baselines on CLIP-Score.
 
 ### Progress on Project Goals:
 
@@ -89,25 +92,24 @@ Evaluations run on the **40-image COCO subset** (`data/selected`) against each t
 
 | Area | Status | Evidence |
 |------|--------|----------|
-| Evaluation pipeline (LPIPS, CLIP-Score, DreamSim) | Done (Checkpoint 1) | `scripts/evaluation.py`; sanity checks in `logs/evaluation_1.json` |
-| Test subset & conditioning data | Done | 40 images in `data/selected`; dense COCO captions; Canny maps in `outputs/controlnet_canny/` |
-| Generative pipeline (ControlNet-Canny) | Done (Checkpoint 2, partial) | `scripts/run_controlnet_canny_batch.py`; 40/40 generations + metrics in `logs/controlnet_canny_results.csv` |
-| Perceptual efficacy (text vs. edge vs. mask) | Open | Only **Config 5** (dense text + Canny) scored; text-only and Canny-only (configs 1–3) not run yet |
-| Multi-modal synergy (text + structure) | Open | Cannot compare multi-modal vs. single modality until configs 1–4 exist on the same 40 images |
-| Semantic vs. structural trade-offs (CFG / ControlNet scale) | Open | Single setting so far (CFG 7.5, ControlNet scale 1.0); no sweep |
+| Evaluation pipeline (LPIPS, CLIP-Score, DreamSim) | Done | `scripts/evaluation.py`; sanity checks in `logs/evaluation_1.json` |
+| Test subset & conditioning data | Done | 40 images in `data/selected`; Canny under `outputs/baseline_structural_canny/` and `outputs/controlnet_canny/` |
+| Text-only SD (Configs 1–2) | Done | `scripts/run_sd_text_batch.py`; `logs/baseline_semantic_*_results.csv` |
+| ControlNet-Canny (Configs 3 & 5) | Done | Empty + dense text variants; `logs/baseline_structural_canny_results.csv`, `logs/controlnet_canny_results.csv` |
+| Perceptual efficacy (text vs. edge vs. mask) | Partial | Canny path scored (3, 5); **segmentation mask** (4, 6) not run |
+| Multi-modal synergy (text + structure) | Partial | Config 5 > Config 3 on all metrics; structure-alone (3) already beats text-only on LPIPS/DreamSim |
 
-- **Checkpoint 1:** Failed generations (noise, blank) score much worse than target-vs-itself on LPIPS/DreamSim and lower CLIP-Score (~20 vs. ~26 on one sample).
-- **Generative reconstruction (Config 5):** Batch reconstructions on all 40 test images; mean LPIPS **0.53**, DreamSim **0.36**, CLIP-Score **30.6** — clearly better than trivial failure baselines, but not near-perfect (LPIPS/DreamSim remain well above 0).
-- **Comparison to baselines:** On the same evaluation framework, ControlNet-Canny outputs are far below noise/blank on LPIPS and DreamSim and substantially higher on CLIP-Score; we have not yet compared against text-only or structure-only generative baselines.
+- **Text-only (Configs 1 vs. 2):** Dense captions raise CLIP **24.1 → 31.3** and lower DreamSim **0.66 → 0.54**; LPIPS ~0.75 for both.
+- **Structure-only (Config 3):** Empty prompt + Canny reaches LPIPS **0.56**, DreamSim **0.46**, CLIP **25.5** — large perceptual gain over text-only, but CLIP stays near sparse-text levels (limited semantic guidance).
+- **Multi-modal (Config 5 vs. 3):** Dense caption + Canny improves CLIP **+5.2** and perceptual metrics vs. empty + Canny; confirms **synergy** beyond structure alone, though most layout gains come from Canny vs. text-only.
 
 #### What is still open or not up to par
 
-| Research question | Gap | Why it matters |
+| Research question | Gap | Comment |
 |-------------------|-----|----------------|
-| **Perceptual efficacy** — which single modality wins? | Configs 1–4 not run | Cannot rank text vs. Canny-only vs. mask without those baselines on the 40-image set |
-| **Multi-modal synergy** | Only Config 5 complete | Need dense-text-only, sparse+Canny-only, etc., to test whether dense text + Canny beats each alone |
+| **Perceptual efficacy** — mask vs. Canny vs. text | Configs 4 & 6 not run | Cannot compare segmentation vs. edge structure |
 | **Semantic vs. structural trade-offs** | No hyperparameter sweep | CFG and ControlNet scale fixed at 7.5 / 1.0 |
-| Sparse vs. dense text variants | Not isolated | Current run uses full COCO captions (dense); sparse prompts not yet implemented |
+| Sparse text + Canny (variant of 3) | Not run separately | Config 3 used **empty** prompt; sparse entity list + Canny optional ablation |
 | Segmentation mask path (configs 4, 6) | Not started | No mask extraction or ControlNet-seg runs |
 | Interactive refinement loop | Not started | Phase 3 |
 
@@ -135,9 +137,9 @@ We will know the experiment is successful when we can produce a robust comparati
 
 - [x] Set up the Stable Diffusion 1.5 + ControlNet pipeline (Canny and additional modalities as needed).
 
-- [x] Implement extraction scripts for spatial modalities (Canny edge maps per image). Sparse vs. dense text variants still to do; current runs use dense COCO captions.
+- [x] Implement extraction scripts for spatial modalities (Canny edge maps per image). Sparse vs. dense text runs complete (`run_sd_text_batch.py`).
 
-- [x] Run batch generation on the test subset for an initial subset of experimental configurations (Config 5: dense text + Canny, **n = 40**). Present intermediate results as tables (`logs/controlnet_canny_results.csv`, experiment table above).
+- [x] Run batch generation on the test subset for an initial subset of experimental configurations. Present intermediate results as tables (`logs`, experiment table above).
 
 - [x] Summarize what is answered vs. still open relative to project goals ([Progress on Project Goals](#progress-on-project-goals)).
 
@@ -174,13 +176,21 @@ cs348k_proj/
 ├── data/selected                 # Selected images by the heuristic
 ├── scripts/
 │   ├── evaluation.py             # Metric stack + trivial baselines
-│   └── run_controlnet_canny_batch.py  # Batch ControlNet-Canny on data/selected
+│   ├── sparse_prompts.py         # COCO category lists for sparse prompts
+│   ├── run_sd_text_batch.py      # Configs 1–2: text-only SD 1.5 (--modality sparse|dense)
+│   └── run_controlnet_canny_batch.py  # Config 3 (empty+Canny) & Config 5 (dense+Canny)
 ├── download.py                   # Pulls COCO-2017 validation subset via FiftyOne
 ├── select_data.py                # Heuristic selection of data from downloaded set
 ├── logs/
 │   ├── evaluation_*.json         # Checkpoint 1 sanity runs
-│   └── controlnet_canny_results.csv   # Per-image metrics for Config 5 (40 rows)
-├── outputs/controlnet_canny/     # Per-image target, canny, generated PNGs
+│   ├── baseline_semantic_sparse_results.csv   # Config 1
+│   ├── baseline_semantic_dense_results.csv    # Config 2
+│   ├── baseline_structural_canny_results.csv  # Config 3
+│   └── controlnet_canny_results.csv   # Config 5 (40 rows)
+├── outputs/baseline_semantic_sparse/  # Config 1 generations
+├── outputs/baseline_semantic_dense/   # Config 2 generations
+├── outputs/baseline_structural_canny/  # Config 3: empty text + Canny
+├── outputs/controlnet_canny/     # Config 5: dense text + Canny
 └── models/                       # Local pretrained weights (CLIP/DINO/DreamSim-related assets, etc.)
 ```
 
@@ -210,7 +220,39 @@ Heuristic selection of data from the downloaded set with rich features and objec
 
 ### `scripts/run_controlnet_canny_batch.py`
 
-Batch **Config 5** reconstruction on `data/selected`: extracts Canny edges, runs SD 1.5 + ControlNet-Canny (dense caption per image), saves `outputs/controlnet_canny/<coco_id>/`, and writes per-image metrics to `logs/controlnet_canny_results.csv`.
+Batch ControlNet-Canny on `data/selected`. CLIP-Score always uses the dense ground-truth caption; only the **generation prompt** changes.
+
+| Flag | Experiment |
+|------|------------|
+| `--modality empty` | **Config 3** — empty text + Canny (`outputs/baseline_structural_canny/`, `logs/baseline_structural_canny_results.csv`) |
+| `--modality dense` | **Config 5** — dense caption + Canny (default; `outputs/controlnet_canny/`) |
+
+```bash
+# Config 3 — Baseline Structural A (empty text + Canny)
+python scripts/run_controlnet_canny_batch.py --modality empty
+
+# Config 5 — Multi-modal A (dense caption + Canny)
+python scripts/run_controlnet_canny_batch.py --modality dense
+```
+
+### `scripts/run_sd_text_batch.py`
+
+Text-only **Stable Diffusion 1.5** (no ControlNet) on the 40-image subset. Sparse prompts are comma-separated **COCO category names** from `instances_val2017.json` (see `sparse_prompts.py`). CLIP-Score always uses the dense ground-truth caption for evaluation.
+
+| Flag | Experiment |
+|------|------------|
+| `--modality sparse` | **Config 1** — Baseline Semantic |
+| `--modality dense` | **Config 2** — Advanced Semantic |
+
+```bash
+# Config 1 — Baseline Semantic (sparse entity list)
+python scripts/run_sd_text_batch.py --modality sparse
+
+# Config 2 — Advanced Semantic (full COCO caption)
+python scripts/run_sd_text_batch.py --modality dense
+```
+
+Outputs: `outputs/baseline_semantic_{sparse,dense}/<coco_id>/` and `logs/baseline_semantic_{sparse,dense}_results.csv`. Optional: `--max-images`, `--guidance-scale 7.5`, `--seed 0` (CUDA).
 
 
 **Dependencies:** Reproduce the conda environment from the pinned spec at [`environment.yml`](environment.yml):
