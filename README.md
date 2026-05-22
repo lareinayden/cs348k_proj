@@ -74,10 +74,14 @@ Evaluations run on the **40-image COCO subset** (`data/selected`) against each t
 | 2 | Advanced Semantic | Dense | — | | | | | | |
 | 3 | Baseline Structural A | Sparse / empty | Canny edge map | | | | | | |
 | 4 | Baseline Structural B | Sparse / empty | Segmentation mask | | | | | | |
-| 5 | Multi-modal A | Dense | Canny edge map | | | | | | |
+| 5 | Multi-modal A | Dense | Canny edge map | 7.5 | 1.0 | 0.533 | 30.62 | 0.357 | 40-image mean; see `logs/controlnet_canny_results.csv` |
 | 6 | Multi-modal B | Dense | Segmentation mask | | | | | | |
 
 *CFG and ControlNet scale columns: report the setting used per run (e.g., low CFG ≈ 3.0, high CFG ≈ 7.5–10.0; structural configs sweep ControlNet conditioning scale).*
+
+**Config 5 run details** (`dense_text_plus_canny`, SD 1.5 + ControlNet-Canny, `scripts/run_controlnet_canny_batch.py`): mean ± std over **n = 40** — LPIPS **0.533 ± 0.064**, DreamSim **0.357 ± 0.093**, CLIP-Score **30.62 ± 3.00**. Best DreamSim: **0.073** (image `000000001584`); highest LPIPS: **0.663** (image `000000000139`). Qualitative outputs: `outputs/controlnet_canny/<coco_id>/` (`target.png`, `canny.png`, `generated.png`).
+
+**Checkpoint 1 reference** (single image; `logs/evaluation_1.json`): target vs. itself — LPIPS 0.00, DreamSim 0.00; vs. noise — 0.89 / 0.90; vs. blank — 0.84 / 0.93. Config 5 scores sit between perfect and failed baselines on perceptual metrics, with much higher CLIP-Score than noise/blank (~20).
 
 ### Progress on Project Goals:
 
@@ -85,25 +89,27 @@ Evaluations run on the **40-image COCO subset** (`data/selected`) against each t
 
 | Area | Status | Evidence |
 |------|--------|----------|
-| Evaluation pipeline (LPIPS, CLIP-Score, DreamSim) | Done (Checkpoint 1) | `evaluation.py`; sanity checks penalize noise and blank outputs vs. target |
-| Test subset & conditioning data | Done (partial) | 40 images in `data/selected`; captions from COCO; Canny path via `run_controlnet_canny.py` |
-| Perceptual efficacy (text vs. edge vs. mask) | *TBD* | |
-| Multi-modal synergy (text + structure) | *TBD* | |
-| Semantic vs. structural trade-offs (CFG / ControlNet scale) | *TBD* | |
+| Evaluation pipeline (LPIPS, CLIP-Score, DreamSim) | Done (Checkpoint 1) | `scripts/evaluation.py`; sanity checks in `logs/evaluation_1.json` |
+| Test subset & conditioning data | Done | 40 images in `data/selected`; dense COCO captions; Canny maps in `outputs/controlnet_canny/` |
+| Generative pipeline (ControlNet-Canny) | Done (Checkpoint 2, partial) | `scripts/run_controlnet_canny_batch.py`; 40/40 generations + metrics in `logs/controlnet_canny_results.csv` |
+| Perceptual efficacy (text vs. edge vs. mask) | Open | Only **Config 5** (dense text + Canny) scored; text-only and Canny-only (configs 1–3) not run yet |
+| Multi-modal synergy (text + structure) | Open | Cannot compare multi-modal vs. single modality until configs 1–4 exist on the same 40 images |
+| Semantic vs. structural trade-offs (CFG / ControlNet scale) | Open | Single setting so far (CFG 7.5, ControlNet scale 1.0); no sweep |
 
-- **Checkpoint 1:** We can score any generated image against a target and caption and distinguish failed generations from plausible ones.
-- **Generative reconstruction:** *TBD — describe initial ControlNet / text runs, metric trends, and example figures.*
-- **Comparison to baselines:** *TBD — e.g., trivial baselines vs. first structural or text-only reconstructions on the 40-image set.*
+- **Checkpoint 1:** Failed generations (noise, blank) score much worse than target-vs-itself on LPIPS/DreamSim and lower CLIP-Score (~20 vs. ~26 on one sample).
+- **Generative reconstruction (Config 5):** Batch reconstructions on all 40 test images; mean LPIPS **0.53**, DreamSim **0.36**, CLIP-Score **30.6** — clearly better than trivial failure baselines, but not near-perfect (LPIPS/DreamSim remain well above 0).
+- **Comparison to baselines:** On the same evaluation framework, ControlNet-Canny outputs are far below noise/blank on LPIPS and DreamSim and substantially higher on CLIP-Score; we have not yet compared against text-only or structure-only generative baselines.
 
 #### What is still open or not up to par
 
 | Research question | Gap | Why it matters |
 |-------------------|-----|----------------|
-| **Perceptual efficacy** — which single modality wins? | *TBD* | Need scored runs for configs 1–4 (and agreed sparse/dense prompts) before ranking modalities. |
-| **Multi-modal synergy** — does text + structure beat single modality? | *TBD* | Configs 5–6 not fully run or evaluated vs. 2–4. |
-| **Semantic vs. structural trade-offs** | *TBD* | CFG and ControlNet scale sweeps not yet reported; may need plots vs. guidance strength. |
-| Full coverage of six configurations on 40 images | *TBD* | Phase 2 may only cover a subset; table rows still empty. |
-| Interactive refinement loop | Not started | Deferred to Phase 3 unless time allows. |
+| **Perceptual efficacy** — which single modality wins? | Configs 1–4 not run | Cannot rank text vs. Canny-only vs. mask without those baselines on the 40-image set |
+| **Multi-modal synergy** | Only Config 5 complete | Need dense-text-only, sparse+Canny-only, etc., to test whether dense text + Canny beats each alone |
+| **Semantic vs. structural trade-offs** | No hyperparameter sweep | CFG and ControlNet scale fixed at 7.5 / 1.0 |
+| Sparse vs. dense text variants | Not isolated | Current run uses full COCO captions (dense); sparse prompts not yet implemented |
+| Segmentation mask path (configs 4, 6) | Not started | No mask extraction or ControlNet-seg runs |
+| Interactive refinement loop | Not started | Phase 3 |
 
 ### Success Criteria:
 We will know the experiment is successful when we can produce a robust comparative analysis cross-referencing our generated outputs against the original target images. Success does not mean "perfect" reconstructions; it means our evaluation pipeline can definitively measure and rank the efficacy of each modality setup.
@@ -127,13 +133,13 @@ We will know the experiment is successful when we can produce a robust comparati
 
 ### Phase 2: Checkpoint 2 — Generative Pipeline & Intermediate Results
 
-- [ ] Set up the Stable Diffusion 1.5 + ControlNet pipeline (Canny and additional modalities as needed).
+- [x] Set up the Stable Diffusion 1.5 + ControlNet pipeline (Canny and additional modalities as needed).
 
-- [ ] Implement extraction scripts for spatial modalities. Define sparse vs. dense text prompts for each image in the 40-image test subset.
+- [x] Implement extraction scripts for spatial modalities (Canny edge maps per image). Sparse vs. dense text variants still to do; current runs use dense COCO captions.
 
-- [ ] Run batch generation on the test subset for an initial subset of experimental configurations (not necessarily all six). Present intermediate results as tables.
+- [x] Run batch generation on the test subset for an initial subset of experimental configurations (Config 5: dense text + Canny, **n = 40**). Present intermediate results as tables (`logs/controlnet_canny_results.csv`, experiment table above).
 
-- [ ] Summarize what is answered vs. still open relative to project goals.
+- [x] Summarize what is answered vs. still open relative to project goals ([Progress on Project Goals](#progress-on-project-goals)).
 
 ### Phase 3: Generative Reconstruction & Final Analysis
 
@@ -166,12 +172,15 @@ cs348k_proj/
 │   └── validation/
 │       └── data/                 # Validation images aligned with COCO val IDs
 ├── data/selected                 # Selected images by the heuristic
+├── scripts/
+│   ├── evaluation.py             # Metric stack + trivial baselines
+│   └── run_controlnet_canny_batch.py  # Batch ControlNet-Canny on data/selected
 ├── download.py                   # Pulls COCO-2017 validation subset via FiftyOne
-├── evaluation.py                 # Metric stack + trivial baselines
-├── run_controlnet_canny.py       # Runs ControlNet pipeline with Canny edge map
 ├── select_data.py                # Heuristic selection of data from downloaded set
-├── logs/                         # Log files for evaluation metrics
-├── outputs/controlnet_canny      # Generated images by ControlNet
+├── logs/
+│   ├── evaluation_*.json         # Checkpoint 1 sanity runs
+│   └── controlnet_canny_results.csv   # Per-image metrics for Config 5 (40 rows)
+├── outputs/controlnet_canny/     # Per-image target, canny, generated PNGs
 └── models/                       # Local pretrained weights (CLIP/DINO/DreamSim-related assets, etc.)
 ```
 
@@ -182,7 +191,7 @@ cs348k_proj/
 
 Loads a small COCO-2017 **validation** split through [FiftyOne](https://voxel51.com/docs/fiftyone/) (`fiftyone.zoo.load_zoo_dataset("coco-2017", split="validation", max_samples=100)`). Use this if you need to (re)populate `data/coco/`; it requires a working FiftyOne install and sufficient disk space for the zoo download.
 
-### `evaluation.py`
+### `scripts/evaluation.py`
 
 Baseline **evaluation pipeline** for the three metrics above:
 
@@ -191,19 +200,17 @@ Baseline **evaluation pipeline** for the three metrics above:
 - Runs three checks: target vs. itself (sanity / “perfect” baseline), target vs. **random noise**, and target vs. **blank white** image.
 - Writes artifacts under `logs/`.
 
-Run from the repo root so relative paths resolve:
-
 ```bash
-python evaluation.py
+python scripts/evaluation.py
 ```
 
 ### `select_data.py`
 
 Heuristic selection of data from the downloaded set with rich features and objects, clear canny edges, and detailed captions.
 
-### `run_controlnet_canny.py`
+### `scripts/run_controlnet_canny_batch.py`
 
-Tests image reconstruction using pretrained models from ControlNet using the modality of canny edge detection.
+Batch **Config 5** reconstruction on `data/selected`: extracts Canny edges, runs SD 1.5 + ControlNet-Canny (dense caption per image), saves `outputs/controlnet_canny/<coco_id>/`, and writes per-image metrics to `logs/controlnet_canny_results.csv`.
 
 
 **Dependencies:** Reproduce the conda environment from the pinned spec at [`environment.yml`](environment.yml):
