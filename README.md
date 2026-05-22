@@ -64,9 +64,51 @@ To measure how forcefully the model applies our inputs, we will evaluate the abo
 
 Note: We will similarly adjust the ControlNet Conditioning Scale when evaluating structural modalities to find the optimal balance between text intent and structural intent.
 
+### Experiment Results:
+
+Evaluations run on the **40-image COCO subset** (`data/selected`) against each target. Metrics are aggregated across the subset (mean unless noted otherwise). Lower is better for **LPIPS** and **DreamSim**; higher is better for **CLIP-Score**.
+
+| ID | Configuration | Text conditioning | Structural conditioning | CFG | ControlNet scale | LPIPS ↓ | CLIP-Score ↑ | DreamSim ↓ | Notes |
+|:--:|---------------|---------------------|-------------------------|-----|------------------|:-------:|:------------:|:----------:|-------|
+| 1 | Baseline Semantic | Sparse | — | | | | | | |
+| 2 | Advanced Semantic | Dense | — | | | | | | |
+| 3 | Baseline Structural A | Sparse / empty | Canny edge map | | | | | | |
+| 4 | Baseline Structural B | Sparse / empty | Segmentation mask | | | | | | |
+| 5 | Multi-modal A | Dense | Canny edge map | | | | | | |
+| 6 | Multi-modal B | Dense | Segmentation mask | | | | | | |
+
+*CFG and ControlNet scale columns: report the setting used per run (e.g., low CFG ≈ 3.0, high CFG ≈ 7.5–10.0; structural configs sweep ControlNet conditioning scale).*
+
+### Progress on Project Goals:
+
+#### What we have demonstrated so far
+
+| Area | Status | Evidence |
+|------|--------|----------|
+| Evaluation pipeline (LPIPS, CLIP-Score, DreamSim) | Done (Checkpoint 1) | `evaluation.py`; sanity checks penalize noise and blank outputs vs. target |
+| Test subset & conditioning data | Done (partial) | 40 images in `data/selected`; captions from COCO; Canny path via `run_controlnet_canny.py` |
+| Perceptual efficacy (text vs. edge vs. mask) | *TBD* | |
+| Multi-modal synergy (text + structure) | *TBD* | |
+| Semantic vs. structural trade-offs (CFG / ControlNet scale) | *TBD* | |
+
+- **Checkpoint 1:** We can score any generated image against a target and caption and distinguish failed generations from plausible ones.
+- **Generative reconstruction:** *TBD — describe initial ControlNet / text runs, metric trends, and example figures.*
+- **Comparison to baselines:** *TBD — e.g., trivial baselines vs. first structural or text-only reconstructions on the 40-image set.*
+
+#### What is still open or not up to par
+
+| Research question | Gap | Why it matters |
+|-------------------|-----|----------------|
+| **Perceptual efficacy** — which single modality wins? | *TBD* | Need scored runs for configs 1–4 (and agreed sparse/dense prompts) before ranking modalities. |
+| **Multi-modal synergy** — does text + structure beat single modality? | *TBD* | Configs 5–6 not fully run or evaluated vs. 2–4. |
+| **Semantic vs. structural trade-offs** | *TBD* | CFG and ControlNet scale sweeps not yet reported; may need plots vs. guidance strength. |
+| Full coverage of six configurations on 40 images | *TBD* | Phase 2 may only cover a subset; table rows still empty. |
+| Interactive refinement loop | Not started | Deferred to Phase 3 unless time allows. |
+
 ### Success Criteria:
 We will know the experiment is successful when we can produce a robust comparative analysis cross-referencing our generated outputs against the original target images. Success does not mean "perfect" reconstructions; it means our evaluation pipeline can definitively measure and rank the efficacy of each modality setup.
 - Checkpoint 1 Success: Our evaluation code is functional and can definitively identify failed generations (e.g., scoring empty pictures or white noise heavily negatively compared to the target).
+- Checkpoint 2 Success: Generations on the test subset, scored and compared to baselines, with intermediate tables or plots and a clear summary of what is done vs. still open.
 - Final Success: A comprehensive set of plots (Modality vs. LPIPS, Modality vs. CLIP-score) proving which input method best captures user intent.
 
 ## Implementation Roadmap
@@ -83,21 +125,25 @@ We will know the experiment is successful when we can produce a robust comparati
 
 - [x] Selected 40 images from the COCO dataset with rich features and objects, clear canny edges, and detailed captions.
 
-### Phase 2: Conditioning Interface & Generative Setup
+### Phase 2: Checkpoint 2 — Generative Pipeline & Intermediate Results
 
-- [ ] Set up the Stable Diffusion 1.5 + ControlNet pipeline.
+- [ ] Set up the Stable Diffusion 1.5 + ControlNet pipeline (Canny and additional modalities as needed).
 
-- [ ] Implement extraction scripts for spatial modalities (Canny edge detection and Segmentation map generation from target images).
+- [ ] Implement extraction scripts for spatial modalities. Define sparse vs. dense text prompts for each image in the 40-image test subset.
 
-- [ ] Run initial generation passes using single modalities to verify the pipeline is connected.
+- [ ] Run batch generation on the test subset for an initial subset of experimental configurations (not necessarily all six). Present intermediate results as tables.
 
-### Phase 3: Generative Reconstruction & Analysis
+- [ ] Summarize what is answered vs. still open relative to project goals.
 
-- [ ] Execute the full suite of four experimental configurations across the dataset subsets.
+### Phase 3: Generative Reconstruction & Final Analysis
 
-- [ ] Implement the interactive feedback loop: evaluate outputs against targets and iteratively refine the conditioning inputs (e.g., prompt adjustment).
+- [ ] Run hyperparameter sweeps (CFG; ControlNet conditioning scale for structural configs). Batch-evaluate all reconstructions and complete the experiment results table.
 
-- [ ] Aggregate results and generate comparative plots (LPIPS vs. Modality, etc.).
+- [ ] Generate final comparative plots (modality vs. LPIPS, CLIP-Score, DreamSim; CFG sweeps where applicable).
+
+- [ ] Answer research questions on perceptual efficacy, multi-modal synergy, and semantic vs. structural trade-offs using the evaluation framework.
+
+- [ ] Implement the interactive feedback loop: refine prompts or conditioning from metric feedback and report whether scores improve.
 
 ### Nice-to-Haves
 - Extension to video reconstruction (if compute allows)
