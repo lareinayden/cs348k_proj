@@ -1,0 +1,18 @@
+# Ignore downloaded diffusion model weights only
+scripts/models/
+
+# Ignore HuggingFace model files if they appear elsewhere
+*.safetensors
+*.ckpt
+*.pth
+*.pt
+*.bin
+
+# Python
+__pycache__/
+*.pyc
+.DS_Storescripts/models/
+.DS_Store
+
+scripts/models/
+.DS_Store
