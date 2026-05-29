@@ -1,50 +1,25 @@
-"""
-Batch ControlNet-Canny reconstruction on the selected COCO subset.
-
-  Config 3 — Baseline Structural A:  --modality empty   (empty text + Canny)
-  Config 5 — Multi-modal A:          --modality dense   (dense caption + Canny)
-"""
-
-import argparse
 from pathlib import Path
+import argparse
 
+import pandas as pd
 import cv2
 import numpy as np
-import pandas as pd
 import torch
-from diffusers import ControlNetModel, StableDiffusionControlNetPipeline
 from PIL import Image
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
 
 from evaluation import GenerativeEvaluator
 
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
 SELECTED_CSV = PROJECT_ROOT / "data/selected/selected_coco_candidates.csv"
 SELECTED_IMAGES = PROJECT_ROOT / "data/selected/images"
 
 BASE_MODEL = "runwayml/stable-diffusion-v1-5"
 CONTROLNET_MODEL = "lllyasviel/sd-controlnet-canny"
+
 MAX_IMAGES = 40
-DEFAULT_GUIDANCE = 7.5
-DEFAULT_CN_SCALE = 1.0
-DEFAULT_STEPS = 20
-
-# Empty prompt for Config 3 (structure-only intent; CLIP still scored with dense caption)
-EMPTY_PROMPT = ""
-
-MODALITY_CONFIG = {
-    "empty": {
-        "experiment_id": 3,
-        "modality": "empty_text_plus_canny",
-        "output_root": PROJECT_ROOT / "outputs/baseline_structural_canny",
-        "result_csv": PROJECT_ROOT / "logs/baseline_structural_canny_results.csv",
-    },
-    "dense": {
-        "experiment_id": 5,
-        "modality": "dense_text_plus_canny",
-        "output_root": PROJECT_ROOT / "outputs/controlnet_canny",
-        "result_csv": PROJECT_ROOT / "logs/controlnet_canny_results.csv",
-    },
-}
 
 
 def scale_to_str(x):
@@ -54,22 +29,10 @@ def scale_to_str(x):
 def get_device_and_dtype():
     if torch.backends.mps.is_available():
         return "mps", torch.float32
-    if torch.cuda.is_available():
+    elif torch.cuda.is_available():
         return "cuda", torch.float16
-    return "cpu", torch.float32
-
-
-def resolve_image_path(coco_id: int, filepath: str) -> Path:
-    path = Path(filepath)
-    if path.is_file():
-        return path
-    local = SELECTED_IMAGES / f"{coco_id:012d}.jpg"
-    if local.is_file():
-        return local
-    coco_val = PROJECT_ROOT / "data/coco/validation/data" / f"{coco_id:012d}.jpg"
-    if coco_val.is_file():
-        return coco_val
-    raise FileNotFoundError(f"No image for COCO {coco_id}: tried {filepath}, {local}, {coco_val}")
+    else:
+        return "cpu", torch.float32
 
 
 def resolve_selected_image_path(coco_id):
@@ -88,15 +51,22 @@ def make_canny_image(target_img, low=100, high=200):
 
 def load_controlnet_pipeline(device, dtype):
     print(f"Loading ControlNet pipeline on {device}...")
-    controlnet = ControlNetModel.from_pretrained(CONTROLNET_MODEL, torch_dtype=dtype)
+
+    controlnet = ControlNetModel.from_pretrained(
+        CONTROLNET_MODEL,
+        torch_dtype=dtype,
+    )
+
     pipe = StableDiffusionControlNetPipeline.from_pretrained(
         BASE_MODEL,
         controlnet=controlnet,
         torch_dtype=dtype,
         safety_checker=None,
     )
+
     pipe = pipe.to(device)
     pipe.set_progress_bar_config(disable=False)
+
     return pipe
 
 
@@ -126,23 +96,28 @@ def parse_args():
 
 def main():
     args = parse_args()
-    cfg = MODALITY_CONFIG[args.modality]
-    output_root_base = cfg["output_root"]
-    result_csv = cfg["result_csv"]
-    modality_name = cfg["modality"]
+
+    if args.modality == "dense":
+        modality_name = "dense_text_plus_canny"
+        output_root_base = PROJECT_ROOT / "outputs/controlnet_canny"
+        result_csv = PROJECT_ROOT / "logs/controlnet_canny_results.csv"
+    else:
+        modality_name = "empty_text_plus_canny"
+        output_root_base = PROJECT_ROOT / "outputs/baseline_structural_canny"
+        result_csv = PROJECT_ROOT / "logs/baseline_structural_canny_results.csv"
 
     output_root_base.mkdir(parents=True, exist_ok=True)
     result_csv.parent.mkdir(parents=True, exist_ok=True)
 
     device, dtype = get_device_and_dtype()
+
+    # Use fixed selected 40 images only
     selected_df = pd.read_csv(SELECTED_CSV).head(args.max_images)
 
     pipe = load_controlnet_pipeline(device, dtype)
     evaluator = GenerativeEvaluator(device=device)
 
     all_results = []
-    print(f"Experiment {cfg['experiment_id']} ({modality_name}), n={len(selected_df)}")
-
 
     for guidance_scale in args.guidance_scales:
         for controlnet_scale in args.controlnet_scales:
@@ -201,7 +176,6 @@ def main():
                     "canny_path": str(canny_path),
                     "generated_path": str(generated_path),
                     "modality": modality_name,
-                    "experiment_id": cfg["experiment_id"],
                     "guidance_scale": guidance_scale,
                     "controlnet_conditioning_scale": controlnet_scale,
                     "num_inference_steps": args.num_inference_steps,
