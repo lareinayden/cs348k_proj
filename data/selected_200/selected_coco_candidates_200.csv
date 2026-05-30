@@ -1,0 +1,201 @@
+coco_id,filepath,caption,total_score,detection_score,edge_score,caption_score,num_objects,num_categories,spread_score,edge_density
+2685,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000002685.jpg,A crowd of people stand near a man behind a bar with wine bottles on it.,0.9821,0.9602,1.0,1.0,19,5,0.9162,0.0967
+6763,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000006763.jpg,A man and a women posing next to one another in front of a table.,0.9803,0.9562,1.0,1.0,7,5,1.0,0.0492
+87144,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000087144.jpg,A baby sitting between a lady and a man on a bench under a tree.,0.9751,0.9448,1.0,1.0,10,4,1.0,0.1448
+2157,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000002157.jpg,A table topped with a cake covered in berries next to a plate of sandwiches.,0.9733,1.0,1.0,0.8667,16,5,1.0,0.1016
+14226,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000014226.jpg,A person is sitting in a chair at a table with a laptop computer.,0.9653,1.0,1.0,0.8267,8,5,1.0,0.0828
+35279,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000035279.jpg,"A man laying his head down next to electronics, a butterfly, and a book. ",0.9653,1.0,1.0,0.8267,9,7,1.0,0.0607
+31620,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000031620.jpg,A woman in a white dress and a man in gray stand near a cake on a white table under a white canopy.,0.9523,0.8941,1.0,1.0,10,6,1.0,0.0352
+95707,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000095707.jpg,Several pastries sitting on aluminum foil next to a bowl with a knife and spatula in it. ,0.9508,0.95,1.0,0.8667,9,4,1.0,0.0719
+54605,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000054605.jpg,Milkshake in tall glass and piece of cake on plate near forks.,0.9493,1.0,1.0,0.7467,15,6,1.0,0.0533
+27620,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000027620.jpg,A laptop sitting on a desk next to a chair and another computer.,0.9487,0.9215,1.0,0.92,7,5,1.0,0.0731
+66771,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000066771.jpg,Two people sitting at a table with beverages on it and the woman holding her phone.,0.9467,1.0,1.0,0.7333,11,7,1.0,0.0548
+18575,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000018575.jpg,"Two plates, one with a sandwich and fries, the other with just a sandwich and a pickle.",0.9467,1.0,1.0,0.7333,8,6,1.0,0.0962
+66817,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000066817.jpg,This plate consists of rice with sauce and peas and meat patties on the side.,0.9467,1.0,1.0,0.7333,11,5,1.0,0.0524
+84674,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000084674.jpg,a girl holds a baby eating a bagel with a boy standing next to them,0.9452,0.9967,1.0,0.7333,9,6,0.9868,0.0582
+47112,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000047112.jpg,A pizza served on a white plate next to empty wine glass and beer.,0.9451,0.9551,1.0,0.8267,25,8,1.0,0.0863
+59598,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000059598.jpg,"A table with a laptop a plate with a muffin and a banana, a can and a cellphone.",0.942,0.9303,1.0,0.8667,10,8,1.0,0.0731
+91779,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000091779.jpg,Three hot dogs with different toppings lined up on a tabletop.,0.9413,1.0,1.0,0.7067,8,6,1.0,0.0878
+22892,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000022892.jpg,"A cat sitting on a table next to plants and a dog outside of a sliding glass door, looking in.",0.9409,0.8688,1.0,1.0,5,5,1.0,0.0881
+97337,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000097337.jpg,This is a nice living room set up with two couches and a television.,0.9387,1.0,1.0,0.6933,9,5,1.0,0.0721
+10707,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000010707.jpg,Man with video game controller in living room with onlooker seated nearby.,0.9356,0.9695,1.0,0.7467,15,8,1.0,0.0729
+65288,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000065288.jpg,A yellow and green object with a brown bird perched on top of it.,0.9329,0.928,1.0,0.8267,39,6,1.0,0.1339
+116208,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000116208.jpg,"A large pizza is shown on a table, with bottles and glasses of wine.",0.9317,0.9846,1.0,0.6933,21,7,1.0,0.1435
+74733,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000074733.jpg,two flatbread pieces covered with different ingredients in between a flight of beers,0.9301,0.9987,1.0,0.6533,19,5,1.0,0.1008
+114907,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000114907.jpg,"A woman holding a milking attachment and standing in front of a cow, with a group of people in the audience.",0.9283,0.9,1.0,0.8667,16,3,1.0,0.1403
+61333,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000061333.jpg,The caramel-colored kitten is  lying on the small blanket on top of the unmade bed.,0.9283,0.9,1.0,0.8667,15,3,1.0,0.0441
+18837,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000018837.jpg,A large truck on a city street with two works sitting on top and one worker climbing in through door.,0.9283,0.9,1.0,0.8667,8,3,1.0,0.1505
+9914,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000009914.jpg,"A sandwich, french fries, bowl of ketchup, onion slice, lettuce slice, tomato slice, and knife sit on the white plate.",0.927,0.9562,1.0,0.7333,7,5,1.0,0.0976
+39477,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000039477.jpg,A beach towel covers a TV across from plants on the wall and in front of the window.,0.9259,0.8945,1.0,0.8667,15,5,1.0,0.0637
+61108,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000061108.jpg,A blue bicycle with a puppy in its basket is parked next to the bleacher steps. ,0.9242,0.95,1.0,0.7333,9,4,1.0,0.0796
+91615,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000091615.jpg,"A kitchen has light wooden colored cabinetry, beige countertops, and stainless steel appliances in an open concept house.",0.9239,0.8902,1.0,0.8667,12,9,1.0,0.0737
+77396,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000077396.jpg,A cat being lazy and a cat being nozy in a living room with tv and a laptop displaying the same things.,0.9229,0.9471,1.0,0.7333,9,7,1.0,0.072
+119233,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000119233.jpg,A cat sprawled out over the top of a laptop computer keyboard.,0.9227,1.0,1.0,0.6133,9,6,1.0,0.0626
+2431,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000002431.jpg,"A table with a plate, wine-filled glass, and bread, among other items",0.9227,1.0,1.0,0.6133,9,6,1.0,0.0521
+56344,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000056344.jpg,"Looking down at a desktop with two monitors, a key board, mouse and cell phones on it.",0.9219,0.8856,1.0,0.8667,7,5,0.9231,0.049
+54628,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000054628.jpg,A tall multi layer cake sitting on top of a blue table cloth.,0.9212,0.9197,1.0,0.7867,24,5,1.0,0.1122
+110999,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000110999.jpg,"A painting of a bowl of fruit sitting in front of another painting,",0.921,0.9193,1.0,0.7867,11,8,1.0,0.0291
+72795,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000072795.jpg,a group of ball players playing on a field in front of an audience,0.9203,0.9,1.0,0.8267,15,3,1.0,0.177
+92091,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000092091.jpg,A little girl is using the toy brush for a chew toy rather than brushing the teddy.,0.92,1.0,1.0,0.6,9,7,1.0,0.1137
+108253,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000108253.jpg,there are two plates of food and a beer in the middle of the table,0.92,1.0,1.0,0.6,13,8,1.0,0.0645
+80932,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000080932.jpg,A little boy sits at a table in a restaurant eating a slice of pizza.,0.92,1.0,1.0,0.6,10,6,1.0,0.0635
+50811,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000050811.jpg,A man in a suit sitting a table with an empty bowl and empty beer bottles.,0.92,1.0,1.0,0.6,9,7,1.0,0.0358
+13659,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000013659.jpg,A man typing on a laptop keyboard in a cluttered work environment.,0.9183,0.9311,1.0,0.7467,18,6,1.0,0.1009
+26465,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000026465.jpg,The opened  laptop is sitting on the table along with other technological tools.,0.918,0.9125,1.0,0.7867,6,6,1.0,0.0421
+25096,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000025096.jpg,A boy sitting in front of cake fashioned to look like a skateboard.,0.918,0.9125,1.0,0.7867,6,6,1.0,0.0721
+26564,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000026564.jpg,An office desk with a row of books and a desktop computer and laptop computer on the desk.,0.9173,0.8755,1.0,0.8667,19,6,0.9703,0.0907
+12670,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000012670.jpg,A large crowd of people walking around while one owns a teddy bear.,0.9165,0.9686,1.0,0.6533,29,5,1.0,0.088
+9400,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000009400.jpg,Sever people are sitting next to each other while using laptops.,0.9159,0.9434,1.0,0.7067,24,5,1.0,0.0429
+92053,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000092053.jpg,Three white dishes with three different sorts of food on them.,0.9147,1.0,1.0,0.5733,11,8,1.0,0.0434
+74256,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000074256.jpg,Two women standing in a train station looking at their phones. ,0.9147,1.0,1.0,0.5733,13,6,1.0,0.1396
+7818,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000007818.jpg,An illuminated floral display forms the centerpiece of the arrangement in this close up of a dining room table setting.,0.9145,0.9878,1.0,0.6,11,6,0.9513,0.0273
+109313,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000109313.jpg,A man holding a Wii game controller while standing in a living room.,0.9135,0.9617,1.0,0.6533,10,5,1.0,0.0764
+116439,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000116439.jpg,A woman with a straw style hat sitting on a small row boat in the water and accessory items hanging behind her on the land area.,0.9134,0.8669,1.0,0.8667,12,4,1.0,0.1447
+11511,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000011511.jpg,A sculpture of two women stting on a bench with their purses on the ground while people standing in a line behind them. ,0.9127,0.8652,1.0,0.8667,10,4,1.0,0.1178
+17714,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000017714.jpg,A banana frittata next to a plate of decoratively cut fruit and a cup of coffee.,0.9123,0.9236,1.0,0.7333,17,7,0.8723,0.0488
+15335,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000015335.jpg,"a young child, lady , and man sitting in a booth at a table",0.912,1.0,1.0,0.56,15,5,1.0,0.0457
+113589,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000113589.jpg,"Two containers containing quiche, a salad, apples and a banana on the side.",0.911,0.9562,1.0,0.6533,7,5,1.0,0.0673
+1503,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000001503.jpg,A picture of an iMac desktop next to a Mac laptop on a desk. ,0.9104,0.8187,1.0,0.96,5,4,1.0,0.0369
+88848,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000088848.jpg,"Multiple pictures of fire hydrants, a woman standing near a tree, and people posing in front of a boat.",0.9104,0.9114,0.8581,1.0,11,5,1.0,0.2013
+6471,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000006471.jpg,A man at bat waiting for a pitch with a catcher and umpire behind him and players from the opposing team in the dugout.,0.9088,0.916,1.0,0.7333,16,5,1.0,0.0582
+92660,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000092660.jpg,An unbaked pizza with cheese and herbs on one half and broccoli on the second.,0.9086,0.9154,1.0,0.7333,17,4,1.0,0.1227
+105335,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000105335.jpg,"A bowl of stew in a white bowl, being held by a person.",0.9082,0.95,1.0,0.6533,11,4,1.0,0.0242
+117719,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000117719.jpg,A man sits at a bar in front of dozens of bottles of alcohol.,0.9079,0.8724,1.0,0.8267,19,4,1.0,0.0956
+82085,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000082085.jpg,A brightly colored train is stopped on the tracks to let passengers on.,0.9075,0.8299,1.0,0.92,12,2,1.0,0.132
+70048,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000070048.jpg,"A glass of wine sits next to a bowl of soup, salad, and a plate with a sandwich.",0.9073,0.9125,1.0,0.7333,6,5,1.0,0.0944
+3845,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000003845.jpg,A dinner plate that has white steamed rice with stir fry vegetables and chicken.,0.9071,0.9891,1.0,0.56,12,6,0.9563,0.0867
+92939,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000092939.jpg,a man and female standing side by side with a cake cutter in their hand,0.9067,0.9705,1.0,0.6,14,6,1.0,0.0811
+1268,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000001268.jpg,A waterway under a bridge with people sitting down and a woman taking a photo.,0.9066,0.9109,1.0,0.7333,11,6,1.0,0.0827
+33221,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000033221.jpg,Two women at a beach with tennis rackets in their hands and one girl looking very excited with her tennis racket in the air. ,0.9062,0.91,1.0,0.7333,18,5,1.0,0.1175
+68409,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000068409.jpg,School boys sit cross legged in front of a chalkboard sign in a vintage black and white photo.,0.9058,0.85,1.0,0.8667,16,2,1.0,0.1356
+78170,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000078170.jpg,"PASSENGER TRAIN IN THE NIGHT HOURS WITH NO SMOKING SIGN, AND TWO WOMEN",0.904,1.0,1.0,0.52,10,6,1.0,0.0545
+62554,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000062554.jpg,a plate of broccoli on a table next to some other plates of food ,0.9035,0.8625,1.0,0.8267,6,4,1.0,0.0554
+58539,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000058539.jpg,"A man in a red hat, suit, and blue striped tie walks past two other men on a street.",0.9017,0.9,1.0,0.7333,11,3,1.0,0.0679
+46031,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000046031.jpg,A small tablet computer next to a larger monitor and keyboard.,0.9016,0.9117,1.0,0.7067,6,5,1.0,0.0952
+9891,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000009891.jpg,The man is loading luggage suitcases onto the cart in the parking lot. ,0.9015,0.9352,1.0,0.6533,13,5,0.9694,0.0958
+37777,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000037777.jpg,The dining table near the kitchen has a bowl of fruit on it.,0.9011,0.8751,1.0,0.7867,14,8,0.9091,0.0246
+65350,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000065350.jpg,"Two young people are skateboarding on the ramp, trying to pull off tricks.",0.9004,0.9328,1.0,0.6533,15,5,1.0,0.0786
+48396,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000048396.jpg,A woman in a tan sweater holding a knife by a young boy in a plaid shirt.,0.9003,0.9562,1.0,0.6,7,6,1.0,0.0708
+117908,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000117908.jpg,A man looking in the refrigerator with a cat also looking inside ,0.9002,0.95,1.0,0.6133,9,4,1.0,0.0439
+97994,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000097994.jpg,Three laptop computers and a desktop computer sit next to each other.,0.8992,0.8885,1.0,0.7467,20,8,1.0,0.0574
+30785,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000030785.jpg,A plate filled with a bowl of vegetables and two slices of bread with a spread on them.,0.8992,0.8945,1.0,0.7333,10,4,0.7782,0.0888
+76547,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000076547.jpg,a male in a white shirt a bicycle and an orange and white train,0.8988,0.9706,1.0,0.56,13,10,1.0,0.1341
+116362,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000116362.jpg,A small bowl filled with chopped vegetables and spoon,0.8987,1.0,1.0,0.4933,8,5,1.0,0.0372
+22371,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000022371.jpg,A man in thought sitting in front of a laptop with a pen in his hand. ,0.8987,0.775,1.0,1.0,4,4,1.0,0.0318
+69224,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000069224.jpg,A man and woman eating doughnuts out of a box at a coffee shop.,0.8978,0.9685,1.0,0.56,13,5,1.0,0.0485
+16249,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000016249.jpg,It sure is a beautiful day to sit outside and read the paper.,0.8973,0.9258,1.0,0.6533,11,4,1.0,0.0815
+85157,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000085157.jpg,A group of people sitting around a table have a meal and a drink.,0.8972,0.9671,1.0,0.56,21,7,1.0,0.1286
+20571,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000020571.jpg,A tugboat sits beside a ferry on placid water with a mountain in the distance.,0.8965,0.8293,1.0,0.8667,12,3,1.0,0.1347
+84362,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000084362.jpg,A toddler and cat are in a living room with open curtains.,0.896,1.0,1.0,0.48,8,7,1.0,0.0787
+62808,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000062808.jpg,Man photographing a fresh pizza his tired buddy just wants to eat,0.896,1.0,1.0,0.48,14,7,1.0,0.1035
+106235,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000106235.jpg,A living room featuring a comfortable seating arrangement of chairs and tables.,0.896,1.0,1.0,0.48,10,5,1.0,0.0343
+117425,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000117425.jpg,A young boy with a spoon looking at a birthday cupcake.,0.895,0.9562,1.0,0.5733,7,5,1.0,0.057
+100624,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000100624.jpg,A girl is standing by a storefront while talking on her phone.,0.8941,0.9364,1.0,0.6133,9,4,1.0,0.0423
+24243,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000024243.jpg,"Two ladies seated with cups of drinks, one smoking while the other seated inside a fridge",0.8941,0.8239,1.0,0.8667,19,3,1.0,0.0855
+31296,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000031296.jpg,"A group of people, some in leftover US army clothing, sit at tables in a large dining room.",0.8938,0.8826,1.0,0.7333,53,8,1.0,0.1098
+40083,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000040083.jpg,a vintage photo of some people sitting under an umbrella ,0.8925,0.9685,1.0,0.5333,11,6,0.9724,0.1619
+36936,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000036936.jpg,A man and woman sitting on a couch playing a video game.,0.8924,0.9327,1.0,0.6133,22,9,1.0,0.0774
+18150,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000018150.jpg,A man with a receding hairline offers a slice of pizza to a toddler.,0.8923,0.9562,1.0,0.56,7,5,1.0,0.0626
+115870,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000115870.jpg,Some people hanging around in a living room with a big couch.,0.8914,0.9898,1.0,0.48,15,6,1.0,0.1228
+32901,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000032901.jpg,Four men are standing together behind a group of red chairs.,0.8909,0.9471,1.0,0.5733,21,7,1.0,0.0848
+25560,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000025560.jpg,A cat perches on top of an entertainment center in front of a TV.,0.8907,0.775,1.0,0.96,4,4,1.0,0.0384
+115245,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000115245.jpg,Several suitcases on wheels leaning up against one long table with chairs.,0.8902,0.9278,1.0,0.6133,16,5,1.0,0.0632
+5001,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000005001.jpg,A group of people holding a large pair of scissors to a ribbon.,0.8899,0.9094,1.0,0.6533,18,4,1.0,0.1178
+3934,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000003934.jpg,A young girl in the foreground and a woman in a bridal dress and other adults in the background. ,0.8897,0.9326,1.0,0.6,14,5,1.0,0.09
+91500,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000091500.jpg,Two kids hanging out playing video games on folding chairs.,0.8894,0.9617,1.0,0.5333,18,9,1.0,0.0631
+82696,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000082696.jpg,a white and black bird is walking by a table and some chairs,0.8889,0.9665,1.0,0.52,12,5,1.0,0.0835
+25986,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000025986.jpg,"Food is on the counter including a glass of water, rice, vegetables, and more",0.8883,0.8881,1.0,0.6933,18,5,1.0,0.085
+17899,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000017899.jpg,Woman working with large assortment of baked goods at kitchen table.,0.888,1.0,1.0,0.44,11,9,1.0,0.1488
+36494,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000036494.jpg,"A crowd of people sitting in a room, with a clock tower in front.",0.8879,0.8871,1.0,0.6933,52,9,0.9874,0.1578
+24610,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000024610.jpg,There is a laptop computer in a room with a couch and a bookcase.,0.8876,0.8866,1.0,0.6933,16,6,1.0,0.048
+18380,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000018380.jpg,a family sitting around a long table filled with a lot of food ,0.8875,0.9042,1.0,0.6533,54,11,1.0,0.1586
+102411,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000102411.jpg,Two people sitting on a motorcycle in the street next to a beach.,0.8869,0.8436,1.0,0.7867,14,4,0.9507,0.1078
+99053,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000099053.jpg,"A bowl of noodles, meat, broccoli and carrots in a sauce with a fork.",0.8865,0.9433,1.0,0.56,8,4,0.9732,0.076
+84650,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000084650.jpg,THERE IS A CAT THAT IS SITTION ON TOP OF THE SUITCASE,0.8859,0.859,1.0,0.7467,7,4,0.811,0.0289
+114049,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000114049.jpg,"People inside a commuter train, with their luggage and bicycles.",0.8858,0.9535,1.0,0.5333,16,5,1.0,0.1036
+100723,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000100723.jpg,Crown marching in one direction in a lightly attended protest.,0.8842,0.95,1.0,0.5333,18,4,1.0,0.1518
+40471,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000040471.jpg,A painted white kitchen with a refrigerator and an automatic dish washer next to an oven stove.,0.8842,0.8611,1.0,0.7333,20,11,0.985,0.0863
+100238,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000100238.jpg,A family standing next to each other while holding frisbees.,0.8842,0.95,1.0,0.5333,10,4,1.0,0.114
+39484,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000039484.jpg,A street full of cars that are driving and parked and a group of people sitting outside eating.,0.8839,0.8605,1.0,0.7333,36,6,1.0,0.1218
+13729,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000013729.jpg,A group of people playing with a Wii in the living room. ,0.8836,0.9724,1.0,0.48,11,6,1.0,0.0804
+80340,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000080340.jpg,a small child wearing a tie and holding a suitcase with other people in the background,0.8829,0.9176,1.0,0.6,20,7,1.0,0.1426
+38829,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000038829.jpg,Two boys riding on a single bicycle on a city street ,0.8821,0.9277,1.0,0.5733,12,4,1.0,0.1305
+66841,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000066841.jpg," A whimsical artistic toaster has eyes, a mouth, a nose, spoon feet, spoon ears, and a mixing beater tail.",0.882,0.8562,1.0,0.7333,7,3,1.0,0.1086
+25386,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000025386.jpg,A man and woman are sitting together while the man eats with chopsticks.,0.8815,0.95,1.0,0.52,8,4,1.0,0.1087
+83531,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000083531.jpg,A BBQ topped with lots of sausages sitting side by side.,0.8813,0.9258,1.0,0.5733,20,4,1.0,0.0745
+98392,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000098392.jpg,"A photo of a busy intersection with a bus, several cars and a clock tower.",0.8811,0.8544,1.0,0.7333,11,4,1.0,0.0925
+12576,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000012576.jpg,An elderly woman seated at a table holding three pizzas.,0.88,1.0,1.0,0.4,15,7,1.0,0.1285
+22705,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000022705.jpg,A woman in a short black dress is holding a champagne flute and standing in front of a refrigerator.,0.8793,0.7911,1.0,0.8667,5,5,0.6894,0.0497
+26204,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000026204.jpg,A group of cars waiting at an intersection for the light to change,0.8781,0.8832,1.0,0.6533,13,5,1.0,0.1709
+31248,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000031248.jpg,"Living room with white chairs and couches, fireplace and books on bookshelves.",0.878,0.9008,1.0,0.6133,21,5,1.0,0.105
+107339,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000107339.jpg,A pretty young lady standing in front of a couch behind a wooden table.,0.8779,0.8897,0.8158,0.96,8,4,0.8336,0.0163
+87476,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000087476.jpg,two people standing on the same skateboard and holding each other up.,0.8776,0.8998,1.0,0.6133,13,3,1.0,0.0701
+78748,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000078748.jpg,"A couple of motorcycles in front of sign, with people standing around.",0.8775,0.8532,0.9836,0.7467,20,3,1.0,0.1825
+29596,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000029596.jpg,"A room with a couch, table set with dinnerware and a television. ",0.8774,0.8995,1.0,0.6133,11,8,1.0,0.0739
+33854,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000033854.jpg,"parked cars, motorcycles and buses on a cobblestone parking lot next to a street.",0.8772,0.8042,1.0,0.8267,22,4,0.848,0.151
+36844,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000036844.jpg,a black couch a green chair a red chair a mirror and a ceiling fan,0.8771,0.9046,1.0,0.6,14,8,1.0,0.0651
+1000,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000001000.jpg,A group of kids posing for a picture on a tennis court.,0.8771,0.8987,1.0,0.6133,17,4,1.0,0.1667
+55528,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000055528.jpg,A man holding a paper bag while showing the camera a toothbrush.,0.8763,0.9562,1.0,0.48,7,6,1.0,0.0561
+2006,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000002006.jpg,City bus driving through pedestrian saturated area near crosswalk.,0.8762,0.95,1.0,0.4933,8,4,1.0,0.1314
+113720,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000113720.jpg,A couple are enjoying pizza and drinks at the restaurant,0.8761,0.9914,1.0,0.4,21,8,1.0,0.0877
+52413,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000052413.jpg,"A child holding a pink toy cell phone with ""Princess Aurora"" inside it.",0.8758,0.8187,1.0,0.7867,5,4,1.0,0.0323
+60932,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000060932.jpg,A man in a suit that is standing in front of a group of people.,0.8757,0.7831,1.0,0.8667,17,3,0.802,0.0932
+102805,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000102805.jpg,A man in holds a Frisbee in the parking lot by the river.,0.8754,0.9364,1.0,0.52,10,6,0.9859,0.0515
+15254,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000015254.jpg,These platters display healthy food choices of two entrees with a side  vegetable and fruit,0.875,0.9,1.0,0.6,8,3,1.0,0.1045
+24567,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000024567.jpg,There is a man looking at a lot if hot dogs in a bun in a pan,0.875,0.9,1.0,0.6,9,3,1.0,0.108
+25603,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000025603.jpg,A girl sitting around a table in a restaurant eating a pizza.  ,0.8746,0.9525,1.0,0.48,23,6,1.0,0.0534
+55150,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000055150.jpg,Two children sit atop their parent's luggage in the parking lot.,0.8738,0.9092,1.0,0.5733,15,5,0.7373,0.1116
+30828,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000030828.jpg,A person covered with an orange sleeping bag rests his head on a blue back pack as he sleeps on a park bench. ,0.8736,0.8377,1.0,0.7333,5,5,0.8758,0.0582
+32334,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000032334.jpg,"Two people, a man and a woman, are toasting with wine glasses.",0.8735,0.95,1.0,0.48,10,4,1.0,0.0737
+92416,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000092416.jpg,A male with a bottled beverage wearing a flower in his lapel.,0.8735,0.95,1.0,0.48,8,4,1.0,0.1007
+20553,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000020553.jpg,Large stuffed animal posed outdoors as if sitting in a chair with beverages on a table.,0.8733,0.8369,1.0,0.7333,11,7,0.7895,0.0784
+93437,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000093437.jpg,An older man is wearing a funny hat in his dining room.,0.8729,0.9486,1.0,0.48,13,8,1.0,0.0912
+89648,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000089648.jpg,People using electronic devises all facing in the same direction.,0.8725,0.9241,1.0,0.5333,38,6,1.0,0.0801
+7574,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000007574.jpg,"A kitchen with two sinks, a counter, detergent, a stove and a refrigerator in it.",0.8721,0.8935,1.0,0.6,12,8,1.0,0.0747
+88040,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000088040.jpg,"Plates of shrimp, vegetables, and noodles served with tea.",0.872,1.0,1.0,0.36,13,7,1.0,0.1331
+4134,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000004134.jpg,Two men standing next to each other holding hands.,0.8711,0.9388,1.0,0.4933,26,5,1.0,0.0696
+39769,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000039769.jpg,Two cats sleeping with a remote control near each of them.,0.8705,0.8426,1.0,0.7067,6,4,0.9203,0.1028
+14439,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000014439.jpg,A group of people standing on a field flying a colorful kite.,0.8705,0.8842,1.0,0.6133,21,4,1.0,0.1768
+104669,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000104669.jpg,"A plate with a meal of meat, potatoes, carrots, and broccoli. ",0.8698,0.9596,1.0,0.44,15,6,0.8385,0.1266
+11149,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000011149.jpg,A man sitting on a motorcycle near several bicycles with a partially visible person standing nearby.,0.8693,0.7688,1.0,0.8667,5,3,1.0,0.1647
+52996,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000052996.jpg,A group of women in military outfits helping other women in a kitchen.,0.8682,0.9205,1.0,0.52,23,10,1.0,0.0899
+30213,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000030213.jpg,"The picture shows the interior of a kitchen, with vintage refrigerator, stove, and other appliances.",0.8681,0.9202,0.9544,0.6,14,8,1.0,0.1868
+56127,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000056127.jpg,"A room with a fire extinguisher, mugs hanging from a shelf and several lights. ",0.868,0.9022,1.0,0.56,8,5,1.0,0.1037
+84031,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000084031.jpg,A batter swinging a bat at a baseball with the catcher and umpire behind him.,0.8678,0.8248,1.0,0.7333,17,4,0.9517,0.1107
+74209,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000074209.jpg,A black and stainless steel kitchen with a snack bar and bar stools. ,0.8676,0.9192,1.0,0.52,21,12,1.0,0.0628
+52891,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000052891.jpg,A dog walking on the beach with a frizzbe in his month.,0.8676,0.8777,1.0,0.6133,8,3,1.0,0.0292
+99039,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000099039.jpg,Plates of food and two glasses of red wine are on a table.,0.8674,0.8595,1.0,0.6533,13,7,0.809,0.1206
+66635,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000066635.jpg,"An apple computer monitor, keyboard and mouse sits on top of a clean wooden desk. ",0.8673,0.7644,1.0,0.8667,4,4,0.9575,0.0339
+107226,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000107226.jpg,Men race on wheeled vehicles towed by a group of husky dogs.,0.867,0.8762,1.0,0.6133,18,4,1.0,0.0571
+14038,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000014038.jpg,A kitchen with hard wood floors and a yellow smiley face balloon.,0.8666,0.8755,1.0,0.6133,25,11,1.0,0.0878
+114884,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000114884.jpg,"A woman with a cigarette standing, while a group of people with luggage walk towards a bus.",0.8661,0.8803,1.0,0.6,33,5,1.0,0.1423
+12120,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000012120.jpg,A couple of women playing a game of tennis on a tennis court.,0.8659,0.8562,1.0,0.6533,25,4,1.0,0.1096
+87470,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000087470.jpg,a big heard of cows walking down a road in a row with green tags on their ears,0.8658,0.8204,1.0,0.7333,20,3,1.0,0.1005
+41872,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000041872.jpg,"A bedroom with  a large bed facing a fireplace that has a television over the top of it, in a shelf space.",0.8654,0.7602,1.0,0.8667,5,4,1.0,0.0402
+60899,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000060899.jpg,The young boy is playing in the living room of his house. ,0.8651,0.9313,1.0,0.48,8,4,1.0,0.0588
+46872,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000046872.jpg,a man standing next to a truck with some stuff on it,0.865,0.8125,1.0,0.7467,6,3,1.0,0.1214
+33638,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000033638.jpg,A woman wearing shorts bends over a frying pan on a stove.,0.865,0.8718,1.0,0.6133,8,4,0.9677,0.0511
+66038,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000066038.jpg,The father and daughter are under an umbrella on the beach.,0.8647,0.8297,1.0,0.7067,16,4,0.8943,0.1432
+86582,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000086582.jpg,A person watering plants with a computer in the foreground.,0.8645,0.9062,1.0,0.5333,7,4,1.0,0.0789
+32610,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000032610.jpg,Assortment of laptop computers displayed on table with backpacks full of electronic cords.,0.8642,0.7931,1.0,0.7867,7,2,0.9474,0.1143
+8021,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000008021.jpg,An audience is looking at an film of a man taking that is projected onto a wall. ,0.864,0.8163,1.0,0.7333,7,3,0.8699,0.0274
+81738,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000081738.jpg,Someone about to cut and birthday cake with blue and yellow frosting. ,0.8636,0.8688,1.0,0.6133,5,5,1.0,0.0597
+94944,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000094944.jpg,A skier on skies and a snowboarder carrying a snowboard on a mountain slope.,0.8636,0.8333,1.0,0.6933,9,4,1.0,0.0876
+48504,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000048504.jpg,A brown and a gray elephant are in a circus ring and the brown elephant is walking behind the gray elephant as well as two people training them are standing nearby.,0.8633,0.7554,1.0,0.8667,6,3,1.0,0.1367
+69213,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000069213.jpg,Two men who are wearing suits and hats standing next to each other.,0.8632,0.85,1.0,0.6533,8,2,1.0,0.0795
+44877,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000044877.jpg,Two people are in a wheelchair and only one of them is holding a racket.,0.8623,0.8125,1.0,0.7333,6,3,1.0,0.042
+74058,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000074058.jpg,A sidewalk next to the outdoor sitting area of a restaurant.,0.862,0.883,1.0,0.5733,27,8,1.0,0.1204
+69356,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000069356.jpg,An Indian woman stands in front of a man selling his fruit,0.8618,0.8306,0.9678,0.7467,22,4,1.0,0.1848
+57232,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000057232.jpg,A chair is fashioned from baseball bats and two cushions.,0.8617,0.9,1.0,0.5333,16,3,1.0,0.1631
+5193,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000005193.jpg,A group of people pose for a picture while a man holds two surfboards. ,0.8617,0.8883,1.0,0.56,9,3,0.953,0.0813
+94751,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000094751.jpg,A traffic light and a signpost at a crossroads intersection near a waterway.,0.8616,0.7874,1.0,0.7867,17,4,0.9314,0.0937
+13546,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000013546.jpg,Young man on skate board balancing on concrete barrier near sidewalk with small park area near by.,0.8614,0.7513,1.0,0.8667,8,3,0.8699,0.1165
+112378,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000112378.jpg,A bunch of bananas on a wooden bench with hammocks in the background.,0.8614,0.846,1.0,0.6533,9,4,0.8366,0.0417
+57672,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000057672.jpg, a river.A group of people with life jacket rowing a long boat in,0.8611,0.8454,1.0,0.6533,16,4,1.0,0.1379
+19432,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000019432.jpg,He's almost got this tennis ball at the end of his racket.,0.8611,0.9224,1.0,0.48,16,4,1.0,0.0951
+73702,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000073702.jpg,A couple of guys standingoutside in the sun talking to each other.,0.8608,0.8625,1.0,0.6133,6,4,1.0,0.0951
+84241,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000084241.jpg,Three women cooking in a professional kitchen together.,0.8608,0.9336,1.0,0.4533,18,10,1.0,0.0814
+34417,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000034417.jpg,Donuts traveling down an assembly line in a factory while people work behind it.,0.8605,0.7669,1.0,0.8267,21,3,1.0,0.1074
+25181,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000025181.jpg,A train station with an awning is depicted with a train on the right platform.,0.8605,0.7493,1.0,0.8667,9,4,0.6554,0.1404
+67213,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000067213.jpg,"A dog jumping through the air above a pool of water that has been marked for distance, with people watching in the distance.",0.859,0.8052,1.0,0.7333,14,3,1.0,0.1522
+94871,/Users/sophiahuang/fiftyone/coco-2017/validation/data/000000094871.jpg,A group of people standing around sheep on a field.,0.859,0.9,0.9923,0.5333,10,3,1.0,0.1812

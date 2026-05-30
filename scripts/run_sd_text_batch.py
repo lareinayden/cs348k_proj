@@ -25,11 +25,11 @@ from sparse_prompts import get_sparse_prompt
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-SELECTED_CSV = PROJECT_ROOT / "data/selected/selected_coco_candidates.csv"
-SELECTED_IMAGES = PROJECT_ROOT / "data/selected/images"
+SELECTED_CSV = PROJECT_ROOT / "data/selected_200/selected_coco_candidates_200.csv"
+SELECTED_IMAGES = PROJECT_ROOT / "data/selected_200/images"
 
 BASE_MODEL = "runwayml/stable-diffusion-v1-5"
-MAX_IMAGES = 40
+MAX_IMAGES = 200
 DEFAULT_STEPS = 20
 
 MODALITY_CONFIG = {
