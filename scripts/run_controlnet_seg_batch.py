@@ -25,6 +25,7 @@ from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
 from transformers import AutoImageProcessor, UperNetForSemanticSegmentation
 
 from evaluation import GenerativeEvaluator
+from caption_utils import get_coco_caption, get_dense_caption
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -204,11 +205,13 @@ def main():
 
             for idx, row in selected_df.iterrows():
                 coco_id = int(row["coco_id"])
-                caption = row["caption"]
+                dense_caption = get_dense_caption(row)
+                coco_caption = get_coco_caption(row)
                 image_path = resolve_selected_image_path(coco_id)
 
                 print(f"\n[{idx + 1}/{len(selected_df)}] Processing COCO {coco_id}")
-                print(f"Caption: {caption}")
+                print(f"COCO caption: {coco_caption}")
+                print(f"Dense caption: {dense_caption}")
 
                 sample_dir = output_root / f"{coco_id:012d}"
                 sample_dir.mkdir(parents=True, exist_ok=True)
@@ -216,7 +219,7 @@ def main():
                 target = Image.open(image_path).convert("RGB").resize((512, 512))
                 seg_image = make_segmentation_image(target, seg_processor, seg_model)
 
-                prompt = build_prompt(args.modality, caption)
+                prompt = build_prompt(args.modality, dense_caption)
 
                 generator = None
                 if device == "cuda":
@@ -239,11 +242,12 @@ def main():
                 seg_image.save(seg_path)
                 result.save(generated_path)
 
-                scores = evaluator.evaluate(target, result, caption)
+                scores = evaluator.evaluate(target, result, dense_caption)
 
                 result_row = {
                     "coco_id": coco_id,
-                    "caption": caption,
+                    "caption": coco_caption,
+                    "dense_caption": dense_caption,
                     "prompt": prompt,
                     "target_path": str(target_path),
                     "seg_path": str(seg_path),

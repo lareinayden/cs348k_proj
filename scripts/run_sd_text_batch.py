@@ -20,6 +20,7 @@ from diffusers import StableDiffusionPipeline
 from PIL import Image
 
 from evaluation import GenerativeEvaluator
+from caption_utils import get_coco_caption, get_dense_caption
 from sparse_prompts import get_sparse_prompt
 
 
@@ -94,7 +95,7 @@ def parse_args():
         "--modality",
         choices=["sparse", "dense"],
         required=True,
-        help="sparse = Config 1 (entity list); dense = Config 2 (full COCO caption)",
+        help="sparse = Config 1 (entity list); dense = Config 2 (Dense Caption column)",
     )
     parser.add_argument("--max-images", type=int, default=MAX_IMAGES)
     parser.add_argument(
@@ -143,12 +144,14 @@ def main():
 
         for idx, row in selected_df.iterrows():
             coco_id = int(row["coco_id"])
-            dense_caption = row["caption"]
+            dense_caption = get_dense_caption(row)
+            coco_caption = get_coco_caption(row)
             prompt = build_prompt(args.modality, coco_id, dense_caption)
 
             image_path = resolve_selected_image_path(coco_id)
 
             print(f"\n[{idx + 1}/{len(selected_df)}] COCO {coco_id}")
+            print(f"COCO caption: {coco_caption}")
             print(f"Dense caption: {dense_caption}")
             print(f"Generation prompt: {prompt}")
 
@@ -179,7 +182,8 @@ def main():
 
             result_row = {
                 "coco_id": coco_id,
-                "caption": dense_caption,
+                "caption": coco_caption,
+                "dense_caption": dense_caption,
                 "prompt": prompt,
                 "target_path": str(target_path),
                 "generated_path": str(generated_path),
