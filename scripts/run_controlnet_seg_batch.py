@@ -26,10 +26,11 @@ from transformers import AutoImageProcessor, UperNetForSemanticSegmentation
 
 from evaluation import GenerativeEvaluator
 from caption_utils import get_coco_caption, get_dense_caption
+from image_utils import load_rgb_image, validate_selected_images
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-SELECTED_CSV = PROJECT_ROOT / "data/selected_200/selected_coco_candidates_200.csv"
+SELECTED_CSV = PROJECT_ROOT / "data/selected_200/selected_coco_candidates_200_shortened.csv"
 SELECTED_IMAGES = PROJECT_ROOT / "data/selected_200/images"
 
 BASE_MODEL = "runwayml/stable-diffusion-v1-5"
@@ -188,6 +189,7 @@ def main():
     device, dtype = get_device_and_dtype()
 
     selected_df = pd.read_csv(SELECTED_CSV).head(args.max_images)
+    validate_selected_images(selected_df["coco_id"].tolist(), SELECTED_IMAGES)
 
     seg_processor, seg_model = load_segmentation_model()
     pipe = load_controlnet_seg_pipeline(device, dtype)
@@ -216,7 +218,7 @@ def main():
                 sample_dir = output_root / f"{coco_id:012d}"
                 sample_dir.mkdir(parents=True, exist_ok=True)
 
-                target = Image.open(image_path).convert("RGB").resize((512, 512))
+                target = load_rgb_image(image_path)
                 seg_image = make_segmentation_image(target, seg_processor, seg_model)
 
                 prompt = build_prompt(args.modality, dense_caption)

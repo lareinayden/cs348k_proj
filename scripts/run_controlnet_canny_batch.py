@@ -10,11 +10,12 @@ from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
 
 from evaluation import GenerativeEvaluator
 from caption_utils import get_coco_caption, get_dense_caption
+from image_utils import load_rgb_image, validate_selected_images
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-SELECTED_CSV = PROJECT_ROOT / "data/selected_200/selected_coco_candidates_200.csv"
+SELECTED_CSV = PROJECT_ROOT / "data/selected_200/selected_coco_candidates_200_shortened.csv"
 SELECTED_IMAGES = PROJECT_ROOT / "data/selected_200/images"
 
 BASE_MODEL = "runwayml/stable-diffusion-v1-5"
@@ -114,6 +115,7 @@ def main():
 
     # Use fixed selected 40 images only
     selected_df = pd.read_csv(SELECTED_CSV).head(args.max_images)
+    validate_selected_images(selected_df["coco_id"].tolist(), SELECTED_IMAGES)
 
     pipe = load_controlnet_pipeline(device, dtype)
     evaluator = GenerativeEvaluator(device=device)
@@ -143,7 +145,7 @@ def main():
                 sample_dir = output_root / f"{coco_id:012d}"
                 sample_dir.mkdir(parents=True, exist_ok=True)
 
-                target = Image.open(image_path).convert("RGB").resize((512, 512))
+                target = load_rgb_image(image_path)
                 canny_image = make_canny_image(target)
 
                 prompt = build_prompt(args.modality, dense_caption)
