@@ -76,51 +76,67 @@ We sweep **Classifier-Free Guidance (CFG)** (e.g., 3.0 vs. 7.5–10.0) and **Con
 
 ### Experiment Results:
 
-Evaluations run on the **40-image COCO subset** (`data/selected`) against each target. Metrics are aggregated across the subset (mean unless noted otherwise). Lower is better for **LPIPS** and **DreamSim**; higher is better for **CLIP-Score**.
+Evaluations run on the **200-image COCO subset** (`data/selected_200`) against each target. Metrics are aggregated across the subset (mean unless noted otherwise). Lower is better for **LPIPS** and **DreamSim**; higher is better for **CLIP-Score**.
 
 | ID | Configuration | Text conditioning | Structural conditioning | CFG | ControlNet scale | LPIPS ↓ | CLIP-Score ↑ | DreamSim ↓ | Notes |
 |:--:|---------------|---------------------|-------------------------|-----|------------------|:-------:|:------------:|:----------:|-------|
-| 1 | Baseline Semantic: Sparse Text | Sparse | — | 7.5 | — | 0.754 | 24.09 | 0.662 | 40-image mean; `logs/baseline_semantic_sparse_results.csv` |
-| 2 | Advanced Semantic: Dense Text | Dense | — | 7.5 | — | 0.752 | 31.30 | 0.544 | 40-image mean; `logs/baseline_semantic_dense_results.csv` |
-| 3 | Baseline Structural A | Empty | Canny edge map | 7.5 | 1.0 | 0.561 | 25.45 | 0.459 | 40-image mean; `logs/baseline_structural_canny_results.csv` |
-| 4 | Baseline Structural B | Empty | Segmentation mask | 7.5 | 1.0 | 0.682 | 21.67 | 0.613 | 40-image mean; `logs/baseline_structural_seg_results.csv` |
-| 5 | Multi-modal A | Dense | Canny edge map | 7.5 | 1.0 | 0.533 | 30.62 | 0.357 | 40-image mean; see `logs/controlnet_canny_results.csv` |
-| 6 | Multi-modal B | Dense | Segmentation mask | 7.5 | 1.0 | 0.654 | 30.75 | 0.469 | 40-image mean; `logs/controlnet_seg_results.csv` |
+| 1 | Baseline Semantic: Sparse Text | Sparse | — | 7.5 | — | 0.763 | 24.10 | 0.687 | 200-image mean; `logs/baseline_semantic_sparse_results.csv` |
+| 2 | Advanced Semantic: Dense Text | Dense | — | 7.5 | — | 0.733 | 33.82 | 0.501 | 200-image mean; `logs/baseline_semantic_dense_results.csv` |
+| 3 | Baseline Structural A | Empty | Canny edge map | 7.5 | 1.0 | 0.545 | 28.15 | 0.432 | 200-image mean; `logs/baseline_structural_canny_results.csv` |
+| 4 | Baseline Structural B | Empty | Segmentation mask | 7.5 | 1.0 | 0.671 | 23.86 | 0.583 | 200-image mean; `logs/baseline_structural_seg_results.csv` |
+| 5 | Multi-modal A | Dense | Canny edge map | 7.5 | 1.0 | 0.517 | 34.44 | 0.328 | 200-image mean; `logs/controlnet_canny_results.csv` |
+| 6 | Multi-modal B | Dense | Segmentation mask | 7.5 | 1.0 | 0.641 | 34.28 | 0.414 | 200-image mean; `logs/controlnet_seg_results.csv` |
+
+*All-CFG means (CFG 3 / 5 / 7.5 / 10, ControlNet scale 1.0 for structural configs): Config 1 — LPIPS 0.758, CLIP 24.0, DreamSim 0.683; Config 2 — 0.732, 33.5, 0.500; Config 3 — 0.545, 28.1, 0.442; Config 4 — 0.672, 23.9, 0.582; Config 5 — 0.519, 34.1, 0.332; Config 6 — 0.642, 34.2, 0.417.*
 
 *CFG and ControlNet scale columns: report the setting used per run (e.g., low CFG ≈ 3.0, high CFG ≈ 7.5–10.0; structural configs sweep ControlNet conditioning scale).*
 
-**Cross-config takeaways:**
-- **Structure vs. text alone:** Empty + Canny (3) lowers LPIPS **~0.75 → 0.56** and DreamSim **~0.60 → 0.46** vs. both text-only configs.
-- **Canny vs. seg mask (3 vs. 4):** Canny wins on all mean metrics (LPIPS **0.561 vs. 0.682**, DreamSim **0.459 vs. 0.613**, CLIP **25.5 vs. 21.7**).
-- **Multi-modal synergy (5 vs. 3):** Adding dense text to Canny improves CLIP **25.5 → 30.6** and perceptual metrics modestly (LPIPS **0.561 → 0.533**, DreamSim **0.459 → 0.357**). Gains are not only from edges—caption helps semantics and refinement.
-- **Multi-modal synergy (6 vs. 4):** Dense caption + seg mask improves all metrics vs. empty + seg (LPIPS **0.682 → 0.654**, DreamSim **0.613 → 0.469**, CLIP **21.7 → 30.8**).
-- **Canny vs. seg multi-modal (5 vs. 6, CFG 10.0):** Dense + Canny wins on perceptual metrics (LPIPS **0.547 vs. 0.660**, DreamSim **0.364 vs. 0.453**); dense + seg is slightly higher on CLIP (**31.3 vs. 30.8**).
-- **Best overall so far:** Config **5** on LPIPS and DreamSim; Config **6** reaches comparable CLIP to Config **5** while lagging on perceptual metrics.
+**Cross-config takeaways (CFG 7.5, 200 images):**
+- **Structure vs. text alone:** Empty + Canny (3) lowers LPIPS **~0.73 → 0.55** and DreamSim **~0.50 → 0.43** vs. dense text (2).
+- **Canny vs. seg mask (3 vs. 4):** Canny wins on all mean metrics (LPIPS **0.545 vs. 0.671**, DreamSim **0.432 vs. 0.583**, CLIP **28.2 vs. 23.9**).
+- **Multi-modal synergy (5 vs. 3):** Adding dense text to Canny improves CLIP **28.2 → 34.4** and perceptual metrics (LPIPS **0.545 → 0.517**, DreamSim **0.432 → 0.328**).
+- **Multi-modal synergy (6 vs. 4):** Dense caption + seg mask improves all metrics vs. empty + seg (LPIPS **0.671 → 0.641**, DreamSim **0.583 → 0.414**, CLIP **23.9 → 34.3**).
+- **Canny vs. seg multi-modal (5 vs. 6):** Dense + Canny wins on perceptual metrics (LPIPS **0.517 vs. 0.641**, DreamSim **0.328 vs. 0.414**); CLIP is comparable (**34.4 vs. 34.3**).
+- **Best overall:** Config **5** on LPIPS and DreamSim; Config **5** and **6** tie on CLIP.
 
-#### Pairwise win-rate: Configs 2 vs 3 vs 4 (same image, CFG 7.5)
+#### Modality win-rate comparisons (200-image subset, all CFG)
 
-Single-modality comparison at **CFG 7.5** / **ControlNet scale 1.0**. For each of the 40 images, the best config on each metric earns **1 point** (ties split 0.5). Lower is better for LPIPS and DreamSim; higher for CLIP-Score.
+Per-image win-rate: for each image and metric (LPIPS ↓, DreamSim ↓, CLIP-Score ↑), the best config earns **1 point** (ties split 0.5). Totals are normalized over **3 metrics × 200 images = 600 points** max per config. Structural configs use **ControlNet scale 1.0**.
 
-**Three-way (best of 2 / 3 / 4 per image per metric):**
+Reproduce: `python scripts/compare_modality_winrate.py --all-cfg` → `logs/modality_winrate_all_cfg.csv`
 
-| Metric | Config 2 (dense text) | Config 3 (empty + Canny) | Config 4 (empty + seg) |
-|--------|:-----------------------:|:------------------------:|:----------------------:|
-| LPIPS ↓ | 0.0% (0 pts) | **97.5%** (39 pts) | 2.5% (1 pt) |
-| DreamSim ↓ | 25.0% (10) | **67.5%** (27) | 7.5% (3) |
-| CLIP-Score ↑ | **97.5%** (39) | 2.5% (1) | 0.0% (0) |
-| **Total** (120 pts max) | 49 (40.8%) | **67 (55.8%)** | 4 (3.3%) |
+**Config 1 vs 2** (sparse vs dense text):
 
-**Pairwise head-to-head (combined over 3 metrics × 40 images = 120 pts):**
+| CFG | Winner | Config 1 (sparse) | Config 2 (dense) |
+|:---:|:------:|:-----------------:|:------------------:|
+| 3.0 | **2** | 13.7% | **86.3%** |
+| 5.0 | **2** | 11.0% | **89.0%** |
+| 7.5 | **2** | 11.0% | **89.0%** |
+| 10.0 | **2** | 11.2% | **88.8%** |
 
-| Matchup | Winner | Win rate | Points |
-|---------|--------|:--------:|:------:|
-| Config 2 vs 3 | **Config 3** | 59.2% | 71–49 |
-| Config 2 vs 4 | **Config 2** | 60.0% | 72–48 |
-| Config 3 vs 4 | **Config 3** | 88.3% | 106–14 |
+Dense text wins at every CFG; gains are mostly on CLIP and DreamSim.
 
-**Interpretation:** Canny edges (3) dominate perceptual metrics; dense text (2) dominates CLIP on almost every image. Seg masks alone (4) rarely win head-to-head. Overall three-way score favors **Config 3** (55.8%), with **Config 2** second (40.8%) driven entirely by semantic alignment.
+**Config 2 vs 3 vs 4** (dense text vs empty + Canny vs empty + seg):
 
-Per-image breakdown: `logs/modality_comparison_234_per_image.csv`.
+| CFG | Winner | Config 2 (dense) | Config 3 (Canny) | Config 4 (seg) |
+|:---:|:------:|:----------------:|:----------------:|:--------------:|
+| 3.0 | **3** | 36.3% | **60.5%** | 3.3% |
+| 5.0 | **3** | 38.3% | **58.8%** | 2.8% |
+| 7.5 | **3** | 38.7% | **59.3%** | 2.0% |
+| 10.0 | **3** | 38.5% | **58.8%** | 2.8% |
+
+Canny (3) dominates overall; dense text (2) wins CLIP on most images; seg alone (4) rarely wins.
+
+**Config 2 vs 5 vs 6** (dense text vs dense + Canny vs dense + seg):
+
+| CFG | Winner | Config 2 (dense) | Config 5 (dense + Canny) | Config 6 (dense + seg) |
+|:---:|:------:|:----------------:|:------------------------:|:----------------------:|
+| 3.0 | **5** | 10.0% | **73.5%** | 16.5% |
+| 5.0 | **5** | 9.8% | **76.7%** | 13.5% |
+| 7.5 | **5** | 10.7% | **74.8%** | 14.5% |
+| 10.0 | **5** | 10.7% | **72.5%** | 16.8% |
+
+Adding structure to dense text strongly favors **Config 5**; **Config 6** beats text-only (2) but trails Canny multi-modal (5) at all CFG values.
 
 **Checkpoint 1 reference** (single image; `logs/evaluation_1.json`): target vs. itself — LPIPS 0.00, DreamSim 0.00; vs. noise — 0.89 / 0.90; vs. blank — 0.84 / 0.93. All generative configs beat trivial failure baselines on CLIP-Score.
 
@@ -131,24 +147,24 @@ Per-image breakdown: `logs/modality_comparison_234_per_image.csv`.
 | Area | Status | Evidence |
 |------|--------|----------|
 | Evaluation pipeline (LPIPS, CLIP-Score, DreamSim) | Done | `scripts/evaluation.py`; sanity checks in `logs/evaluation_1.json` |
-| Test subset & conditioning data | Done | 40 images in `data/selected`; Canny under `outputs/baseline_structural_canny/` and `outputs/controlnet_canny/` |
+| Test subset & conditioning data | Done | 200 images in `data/selected_200`; outputs under `outputs/` |
 | Text-only SD (Configs 1–2) | Done | `scripts/run_sd_text_batch.py`; `logs/baseline_semantic_*_results.csv` |
 | ControlNet-Canny (Configs 3 & 5) | Done | Empty + dense text variants; `logs/baseline_structural_canny_results.csv`, `logs/controlnet_canny_results.csv` |
 | ControlNet-Seg (Configs 4 & 6) | Done | Empty + dense text variants; `logs/baseline_structural_seg_results.csv`, `logs/controlnet_seg_results.csv` |
 | Perceptual efficacy (text vs. edge vs. mask) | Done | Single-modality configs 2–4 scored; pairwise win-rate in `logs/modality_comparison_234_winrate.txt` |
 | Multi-modal synergy (text + structure) | Done | Configs 5 & 6 vs. 3 & 4; dense text improves both Canny and seg paths |
 
-- **Text-only (Configs 1 vs. 2):** Dense captions raise CLIP **24.1 → 31.3** and lower DreamSim **0.66 → 0.54**; LPIPS ~0.75 for both.
-- **Structure-only (Config 3):** Empty prompt + Canny reaches LPIPS **0.56**, DreamSim **0.46**, CLIP **25.5** — large perceptual gain over text-only, but CLIP stays near sparse-text levels (limited semantic guidance).
-- **Multi-modal (Config 5 vs. 3):** Dense caption + Canny improves CLIP **+5.2** and perceptual metrics vs. empty + Canny; confirms **synergy** beyond structure alone, though most layout gains come from Canny vs. text-only.
-- **Multi-modal (Config 6 vs. 4):** Dense caption + seg mask raises CLIP **21.7 → 30.8** and lowers LPIPS/DreamSim vs. empty + seg; text is essential for seg-based reconstruction.
+- **Text-only (Configs 1 vs. 2):** Dense captions raise CLIP **24.1 → 33.8** and lower DreamSim **0.69 → 0.50** at CFG 7.5; LPIPS similar (~0.76 vs ~0.73).
+- **Structure-only (Config 3):** Empty prompt + Canny reaches LPIPS **0.55**, DreamSim **0.43**, CLIP **28.2** — large perceptual gain over text-only, with moderate CLIP.
+- **Multi-modal (Config 5 vs. 3):** Dense caption + Canny improves CLIP **28.2 → 34.4** and perceptual metrics vs. empty + Canny.
+- **Multi-modal (Config 6 vs. 4):** Dense caption + seg mask raises CLIP **23.9 → 34.3** and lowers LPIPS/DreamSim vs. empty + seg.
 
 #### What is still open or not up to par
 
 | Research question | Gap | Comment |
 |-------------------|-----|----------------|
 | **Perceptual efficacy** — mask vs. Canny vs. text | Addressed | Configs 2–4 win-rate done; Canny (3) beats seg (4) on structure-only; dense text wins CLIP |
-| **Semantic vs. structural trade-offs** | Partial | Config 6 has full CFG sweep; Config 5 CSV currently CFG 10 only — align sweeps for direct 5 vs. 6 at 7.5 |
+| **Semantic vs. structural trade-offs** | Done | Full CFG sweep (3–10) for all configs; see experiment table and win-rate section |
 | Sparse text + Canny (variant of 3) | Not run separately | Config 3 used **empty** prompt; sparse entity list + Canny optional ablation |
 | Interactive refinement loop | Not started | Phase 3 |
 
@@ -319,19 +335,20 @@ Outputs: `outputs/baseline_semantic_{sparse,dense}/<coco_id>/` and `logs/baselin
 
 ### `scripts/compare_modality_winrate.py`
 
-Pairwise and multi-way **win-rate** comparison for **2 or 3** experiment configs (IDs 1–6). Registry covers all six configurations (text-only, structure-only, and multi-modal).
+Pairwise and multi-way **win-rate** comparison for **2 or 3** experiment configs (IDs 1–6). For each image and metric, the best config earns 1 point (ties split 0.5).
 
 ```bash
-# Default: single-modality configs 2 vs 3 vs 4
+# Default: single-modality configs 2 vs 3 vs 4 at one CFG
 python scripts/compare_modality_winrate.py --configs 2 3 4 --guidance-scale 7.5
 
-# Multi-modal: dense + Canny vs dense + seg (use a CFG present in both CSVs)
+# All comparison groups × all CFG values (tables in README)
+python scripts/compare_modality_winrate.py --all-cfg
+
+# Two-way example
 python scripts/compare_modality_winrate.py --configs 5 6 --guidance-scale 10.0
 ```
 
-Compare **2 or 3** config IDs (1–6). For each image and metric, the best config earns 1 point (ties split 0.5); aggregates over 40 images.
-
-Outputs: `logs/modality_comparison_<ids>_per_image.csv` and `logs/modality_comparison_<ids>_winrate.txt`. Optional: `--controlnet-scale 1.0`, `--output-csv`, `--output-summary`.
+Outputs: `logs/modality_comparison_<ids>_per_image.csv`, `logs/modality_comparison_<ids>_winrate.txt`, and `logs/modality_winrate_all_cfg.csv` with `--all-cfg`. Optional: `--controlnet-scale 1.0`.
 
 
 **Dependencies:** Reproduce the conda environment from the pinned spec at [`environment.yml`](environment.yml):
