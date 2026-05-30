@@ -1,68 +1,78 @@
-# Evaluating Modality Efficacy for Intent Expression in Generative Image Reconstruction
+# Comparative Evaluation of Conditioning Modalities for Target Scene Reconstruction
 
 ## Team
 Sophia Huang (sophiacc)  
 Yixiao Zhang (yixiaoz)
 
 ## Summary
-We are going to build a visual computing system that evaluates how different conditioning modalities such as text prompts and spatial layouts express user intent during generative image reconstruction. Rather than focusing on training new models, our goal is to design a framework that measures how effectively various inputs guide a pretrained generative model to reconstruct a target image.
 
-We will demonstrate success by performing a “generative reconstruction” task on a standard image dataset, where the system attempts to recreate a given target image using different forms of user input. Our approach includes an interactive feedback loop that allows iterative refinement of inputs and outputs. By the end of the project, we will provide a comparative analysis of modality efficacy using perceptual and semantic metrics, identifying which input modalities best capture and communicate user intent in generative systems.
+Modern diffusion models such as ControlNet support a variety of conditioning modalities, including text prompts, edge maps, and semantic segmentation masks. While these modalities are widely available, it remains unclear which forms of conditioning provide the most useful **semantic and structural scene information** for guiding image generation. Understanding the strengths and limitations of each modality can help practitioners choose more effective conditioning strategies and avoid unnecessary inputs during generation.
 
-## Research Questions & Goals
-Our project aims to answer the following core questions:
-- Perceptual Efficacy: Which single modality (Text Prompts, Canny Edge Maps, or Semantic Segmentation Masks) yields the highest perceptual similarity to the original target image?
-- Multi-modal Synergy: Does combining a semantic modality (Text) with a structural modality (Edge/Mask) statistically improve reconstruction fidelity compared to using a single modality?
-- Semantic vs. Structural Trade-offs: At what point do strict structural constraints degrade the generative model's ability to render perceptually realistic textures?
+We study this through a **generative reconstruction** task: given a target scene, we derive different conditioning signals (text, Canny edges, segmentation masks, and combinations) and measure how well a frozen Stable Diffusion + ControlNet pipeline recreates that target. We ask how well each modality preserves semantic and structural information **relevant to that target**, scored with perceptual and semantic metrics (LPIPS, CLIP-Score, DreamSim).
+
+## Problem & Research Questions
+
+### Problem
+
+Practitioners can supply text, edges, masks, or combinations to ControlNet-style models, but there is no clear guidance on which inputs carry the most reconstructive signal for a given scene. We compare modalities under a controlled reconstruction setup on a fixed COCO subset.
+
+### Core question
+
+**Which modality provides the strongest conditioning signal for reconstructing a target scene?**
+
+### Supporting questions
+
+- **Semantic vs. structural signal:** Which single modality—sparse text, dense text, Canny edges, or segmentation masks—best preserves target semantics (CLIP-Score) and layout/perception (LPIPS, DreamSim)?
+- **Multi-modal synergy:** Does combining text with a structural modality improve reconstruction beyond either alone?
+- **Conditioning strength:** How do CFG and ControlNet conditioning scale affect the trade-off between following structure and preserving realistic texture?
+
 
 ## System Architecture
 
 ### Inputs
-Target Datasets:
-- COCO: For evaluating complex, multi-object compositional intent and region-based masks.
-- LAION (if resources allow): As it is a much larger dataset, we will incorporate it to evaluate broad, unconstrained generative capabilities across a massive variety of subjects and structural compositions if computational limits permit.
+Target dataset:
+- **COCO** (40-image subset in `data/selected`): diverse multi-object scenes with captions, edges, and masks derived from each target.
 
-Conditioning Modalities:
-- Ground-truth dataset captions (Text)
-- Extracted Canny edge maps (High-frequency structure)
-- Extracted Semantic segmentation masks (Region-based layout)
+Conditioning modalities (extracted from or paired with the target):
+- **Text:** sparse entity lists (COCO categories) or **dense** captions (`Dense Caption` column in `selected_coco_candidates.csv`)
+- **Canny edge maps:** high-frequency structure from the target
+- **Semantic segmentation masks:** region layout from the target (UperNet → ControlNet-seg)
 
-Generative Core: 
-- Stable Diffusion 1.5 + ControlNet (Weights frozen): Given limited computational resources, we decided to start with this architecture. Although its performance is not the state of the art now, it provides a well-documented and controllable baseline.
-- Advanced Models (if resources allow): We will also try evaluating on more advanced state-of-the-art models such as Flux, Hunyuan-image, and Qwen-image.
+Generative core:
+- **Stable Diffusion 1.5 + ControlNet** (weights frozen): documented, controllable baseline given our compute budget.
 
 ### Outputs
 Qualitative Analysis:
 - Reconstructed images for each modality configuration.
 - Visual comparisons (target vs reconstructions).
 
-Quantitative Evaluation Metrics:
-- LPIPS: For measuring human perceptual similarity.
-- CLIP-Score: For measuring semantic alignment with the ground-truth text.
-- DreamSim: For measuring mid-level structural and perceptual similarity (e.g., spatial layout, object pose, and intent alignment) without being penalized by strict pixel-level deviations.
+Quantitative Evaluation Metrics (vs. target scene):
+- **LPIPS:** perceptual similarity to the target image
+- **CLIP-Score:** semantic alignment with the dense caption (proxy for scene semantics)
+- **DreamSim:** mid-level layout and perceptual similarity to the target
 
 
 ## Experimental Design & Success Criteria
-To answer these questions, we will conduct a series of reconstruction experiments.
 
-### The Experiment:
-To isolate the efficacy of each modality, we categorize our text inputs into two tiers:
-- Dense Text (Spatial): Highly descriptive captions explicitly detailing spatial relationships (e.g., "A yellow banana resting on top of a wooden table").
-- Sparse Text (Semantic): Simplified entity lists stripping away spatial context (e.g., "A banana, a table").
+We hold the **target image** fixed and vary only the conditioning modality. Each configuration produces a reconstruction; metrics measure how much semantic and structural information from the target scene is preserved.
 
-For a sampled subset of target images, we will extract ground-truth conditioning data and attempt a generative reconstruction using the following configurations:
-1. Baseline Semantic: Sparse Text Prompt.
-2. Advanced Semantic: Dense Text Prompt.
-3. Baseline Structural A: Empty/Sparse Text Prompt + Canny Edge Map.
-4. Baseline Structural B: Empty/Sparse Text Prompt + Semantic Segmentation Mask.
-5. Multi-modal A: Dense Text Prompt + Canny Edge Map.
-6. Multi-modal B: Dense Text Prompt + Semantic Segmentation Mask (To observe if redundant spatial instructions degrade quality).
+### Configurations
 
-Hyperparameter Sweeps (Intent Guidance):
+Text tiers (semantic conditioning):
+- **Sparse text:** comma-separated COCO category names (entity list, minimal spatial wording)
+- **Dense text:** enriched captions from the `Dense Caption` column in `data/selected/selected_coco_candidates.csv`
 
-To measure how forcefully the model applies our inputs, we will evaluate the above configurations across varied scales of Classifier-Free Guidance (CFG). We will test outputs at a low CFG (e.g., 3.0 - allowing model prior to dominate) and a high CFG (e.g., 7.5 to 10.0 - forcing strict adherence to the input intent).
+Six reconstruction configurations on the 40-image subset:
+1. **Baseline Semantic:** sparse text only
+2. **Advanced Semantic:** dense text only
+3. **Baseline Structural A:** empty text + Canny edge map
+4. **Baseline Structural B:** empty text + semantic segmentation mask
+5. **Multi-modal A:** dense text + Canny edge map
+6. **Multi-modal B:** dense text + semantic segmentation mask
 
-Note: We will similarly adjust the ControlNet Conditioning Scale when evaluating structural modalities to find the optimal balance between text intent and structural intent.
+### Hyperparameter sweeps (conditioning strength)
+
+We sweep **Classifier-Free Guidance (CFG)** (e.g., 3.0 vs. 7.5–10.0) and **ControlNet conditioning scale** for structural configs to see how strongly the model follows each signal vs. its prior.
 
 ### Experiment Results:
 
@@ -113,11 +123,13 @@ Evaluations run on the **40-image COCO subset** (`data/selected`) against each t
 | Segmentation mask path (configs 4, 6) | Not started | No mask extraction or ControlNet-seg runs |
 | Interactive refinement loop | Not started | Phase 3 |
 
-### Success Criteria:
-We will know the experiment is successful when we can produce a robust comparative analysis cross-referencing our generated outputs against the original target images. Success does not mean "perfect" reconstructions; it means our evaluation pipeline can definitively measure and rank the efficacy of each modality setup.
-- Checkpoint 1 Success: Our evaluation code is functional and can definitively identify failed generations (e.g., scoring empty pictures or white noise heavily negatively compared to the target).
-- Checkpoint 2 Success: Generations on the test subset, scored and compared to baselines, with intermediate tables or plots and a clear summary of what is done vs. still open.
-- Final Success: A comprehensive set of plots (Modality vs. LPIPS, Modality vs. CLIP-score) proving which input method best captures user intent.
+### Success Criteria
+
+Success means ranking **which conditioning modality strongest reconstructs the target scene** under our metric framework—not achieving perfect pixel-level copies.
+
+- **Checkpoint 1:** Evaluation pipeline distinguishes failed generations (noise, blank) from plausible reconstructions.
+- **Checkpoint 2:** Batch reconstructions on the test subset, scored vs. targets, with tables and a progress summary.
+- **Final:** Completed experiment table and modality-vs-metric plots identifying the strongest semantic and structural conditioning signals; limitations of target-as-proxy intent stated clearly.
 
 ## Implementation Roadmap
 
@@ -149,15 +161,15 @@ We will know the experiment is successful when we can produce a robust comparati
 
 - [ ] Generate final comparative plots (modality vs. LPIPS, CLIP-Score, DreamSim; CFG sweeps where applicable).
 
-- [ ] Answer research questions on perceptual efficacy, multi-modal synergy, and semantic vs. structural trade-offs using the evaluation framework.
+- [ ] Answer which modality provides the strongest conditioning signal (semantic vs. structural vs. combined) using the evaluation framework.
 
-- [ ] Implement the interactive feedback loop: refine prompts or conditioning from metric feedback and report whether scores improve.
+- [ ] Document limitations of target-as-proxy intent and what a future human study would add.
 
 ### Nice-to-Haves
-- Extension to video reconstruction (if compute allows)
-- Automated prompt refinement or suggestion system
-- Visualization tools for comparing modality contributions
-- User study to evaluate perceived controllability
+- Human study linking conditioning choice to perceived user intent (beyond target-as-proxy)
+- Automated prompt refinement from metric feedback
+- Visualization tools comparing modality contributions
+- Extension to additional ControlNet modalities or newer backbones
 
 ## Repository Layout
 
@@ -220,7 +232,7 @@ Heuristic selection of data from the downloaded set with rich features and objec
 
 ### `scripts/run_controlnet_canny_batch.py`
 
-Batch ControlNet-Canny on `data/selected`. CLIP-Score always uses the dense ground-truth caption; only the **generation prompt** changes.
+Batch ControlNet-Canny on `data/selected`. Dense generation uses the **`Dense Caption`** column; CLIP-Score always uses that dense caption as the semantic reference for the target scene.
 
 | Flag | Experiment |
 |------|------------|
@@ -237,7 +249,7 @@ python scripts/run_controlnet_canny_batch.py --modality dense
 
 ### `scripts/run_sd_text_batch.py`
 
-Text-only **Stable Diffusion 1.5** (no ControlNet) on the 40-image subset. Sparse prompts are comma-separated **COCO category names** from `instances_val2017.json` (see `sparse_prompts.py`). CLIP-Score always uses the dense ground-truth caption for evaluation.
+Text-only **Stable Diffusion 1.5** (no ControlNet) on the 40-image subset. Sparse prompts are COCO category lists (`sparse_prompts.py`); dense prompts use the **`Dense Caption`** column. CLIP-Score uses the dense caption as the semantic reference for the target scene.
 
 | Flag | Experiment |
 |------|------------|
@@ -266,14 +278,15 @@ The file pins package builds for reproducibility. Otherwise, you need roughly: P
 
 
 ## Risks and Mitigation
-**Difficulty controlling pretrained model outputs**
-Use constrained inputs (e.g., layouts) and iterative refinement
 
-**Ambiguity in defining “user intent”**
-Use reconstruction tasks with known targets as a proxy
+**Difficulty controlling pretrained model outputs**  
+Use fixed checkpoints, documented CFG / ControlNet scales, and per-image metric logging.
 
-**Evaluation metrics may not fully capture quality**
-Combine perceptual and semantic metrics with visual inspection
+**Proxy intent vs. real user intent**  
+We use the target image and dense caption as stand-ins for “what should be preserved”; conclusions are about reconstructive conditioning signal, not live user preferences. A human study would be needed to validate intent in practice.
 
-**High computational cost**
-Limit resolution or number of samples; reuse cached results when possible
+**Evaluation metrics may not fully capture scene fidelity**  
+Combine LPIPS, DreamSim, and CLIP-Score with qualitative target-vs-generated comparisons.
+
+**High computational cost**  
+Fixed 40-image subset; cache generations and sweep hyperparameters on a subset first.
