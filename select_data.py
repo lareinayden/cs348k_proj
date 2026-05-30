@@ -1,8 +1,9 @@
-# select_data.py
+# select_data_200.py
 
 import json
 from collections import defaultdict
 from pathlib import Path
+from shutil import copy2
 
 import cv2
 import numpy as np
@@ -13,12 +14,13 @@ import fiftyone.zoo as foz
 # -----------------------------
 # Config
 # -----------------------------
-MAX_SAMPLES = 100
-TOP_K = 40
+MAX_SAMPLES = 1000   # set to None to score all COCO val2017 images
+TOP_K = 200
 
 COCO_CAPTION_FILE = Path("data/coco/raw/captions_val2017.json")
-OUTPUT_DIR = Path("data/selected")
-OUTPUT_CSV = OUTPUT_DIR / "selected_coco_candidates.csv"
+
+OUTPUT_DIR = Path("data/selected_200")
+OUTPUT_CSV = OUTPUT_DIR / "selected_coco_candidates_200.csv"
 
 SPATIAL_WORDS = [
     "on", "under", "above", "below", "next to", "beside",
@@ -31,22 +33,18 @@ SPATIAL_WORDS = [
 # Utility functions
 # -----------------------------
 def load_coco_captions(caption_file):
-    """Load COCO captions from captions_val2017.json."""
     with open(caption_file, "r", encoding="utf-8") as f:
         caption_json = json.load(f)
 
     captions_by_image_id = defaultdict(list)
 
     for ann in caption_json["annotations"]:
-        image_id = ann["image_id"]
-        caption = ann["caption"]
-        captions_by_image_id[image_id].append(caption)
+        captions_by_image_id[ann["image_id"]].append(ann["caption"])
 
     return captions_by_image_id
 
 
 def get_caption_score(captions):
-    """Score captions based on length and spatial relationship words."""
     if not captions:
         return 0.0, ""
 
@@ -54,7 +52,6 @@ def get_caption_score(captions):
     text = best_caption.lower()
 
     length_score = min(len(text.split()) / 15.0, 1.0)
-
     spatial_count = sum(1 for word in SPATIAL_WORDS if word in text)
     spatial_score = min(spatial_count / 3.0, 1.0)
 
@@ -64,7 +61,6 @@ def get_caption_score(captions):
 
 
 def get_detection_score(sample):
-    """Score image layout complexity using COCO detections."""
     if not sample.has_field("detections"):
         return 0.0, 0, 0, 0.0
 
@@ -86,7 +82,6 @@ def get_detection_score(sample):
     areas = []
 
     for d in dets:
-        # FiftyOne bounding boxes are normalized [x, y, width, height]
         x, y, w, h = d.bounding_box
         centers.append([x + w / 2.0, y + h / 2.0])
         areas.append(w * h)
@@ -94,11 +89,9 @@ def get_detection_score(sample):
     centers = np.array(centers)
     areas = np.array(areas)
 
-    # Prefer scenes with multiple objects and categories
     object_score = min(num_objects / 8.0, 1.0)
     category_score = min(num_categories / 5.0, 1.0)
 
-    # Prefer objects spread across the image
     if len(centers) > 1:
         spread_score = min(
             (np.std(centers[:, 0]) + np.std(centers[:, 1])) / 0.35,
@@ -107,7 +100,6 @@ def get_detection_score(sample):
     else:
         spread_score = 0.2
 
-    # Avoid scenes where all detections are tiny
     area_score = min(np.mean(areas) / 0.08, 1.0)
 
     detection_score = (
@@ -121,7 +113,6 @@ def get_detection_score(sample):
 
 
 def get_edge_score(image_path):
-    """Score Canny edge quality using edge density."""
     img = cv2.imread(str(image_path))
 
     if img is None:
@@ -133,8 +124,6 @@ def get_edge_score(image_path):
     edges = cv2.Canny(gray, 100, 200)
     edge_density = float(np.mean(edges > 0))
 
-    # Good edge maps are informative but not too noisy.
-    # Roughly 2%–18% edge pixels is useful.
     if edge_density < 0.02:
         edge_score = edge_density / 0.02
     elif edge_density > 0.18:
@@ -146,18 +135,9 @@ def get_edge_score(image_path):
 
 
 def extract_coco_id_from_path(filepath):
-    """
-    COCO val filenames look like:
-    000000123456.jpg
-
-    The integer stem is the COCO image id.
-    """
     return int(Path(filepath).stem)
 
 
-# -----------------------------
-# Main selection pipeline
-# -----------------------------
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -171,16 +151,21 @@ def main():
     captions_by_image_id = load_coco_captions(COCO_CAPTION_FILE)
 
     print("Loading COCO validation subset from FiftyOne...")
-    dataset = foz.load_zoo_dataset(
-        "coco-2017",
-        split="validation",
-        max_samples=MAX_SAMPLES,
-        label_types=["detections", "segmentations"],
-    )
+
+    load_kwargs = {
+        "name": "coco-2017-val-selection-200",
+        "split": "validation",
+        "label_types": ["detections", "segmentations"],
+    }
+
+    if MAX_SAMPLES is not None:
+        load_kwargs["max_samples"] = MAX_SAMPLES
+
+    dataset = foz.load_zoo_dataset("coco-2017", **load_kwargs)
 
     rows = []
 
-    for sample in dataset:
+    for i, sample in enumerate(dataset):
         image_path = Path(sample.filepath)
         coco_id = extract_coco_id_from_path(image_path)
 
@@ -190,8 +175,6 @@ def main():
         detection_score, num_objects, num_categories, spread_score = get_detection_score(sample)
         edge_score, edge_density = get_edge_score(image_path)
 
-        # Weighted total score
-        # Detection/layout matters most, edge quality second, caption quality third.
         total_score = (
             0.45 * detection_score
             + 0.35 * edge_score
@@ -212,25 +195,26 @@ def main():
             "edge_density": round(edge_density, 4),
         })
 
+        if (i + 1) % 100 == 0:
+            print(f"Scored {i + 1} images...")
+
     df = pd.DataFrame(rows)
     df = df.sort_values("total_score", ascending=False)
 
     selected = df.head(TOP_K)
     selected.to_csv(OUTPUT_CSV, index=False)
 
-    from shutil import copy2
-
-    SELECTED_IMAGE_DIR = OUTPUT_DIR / "images"
-    SELECTED_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+    selected_image_dir = OUTPUT_DIR / "images"
+    selected_image_dir.mkdir(parents=True, exist_ok=True)
 
     for _, row in selected.iterrows():
         src = Path(row["filepath"])
-        dst = SELECTED_IMAGE_DIR / f"{int(row['coco_id']):012d}.jpg"
+        dst = selected_image_dir / f"{int(row['coco_id']):012d}.jpg"
         copy2(src, dst)
 
-    print(f"Copied selected images to: {SELECTED_IMAGE_DIR}")
+    print(f"\nCopied selected images to: {selected_image_dir}")
+    print(f"Saved selected candidates to: {OUTPUT_CSV}")
 
-    print(f"\nSaved selected candidates to: {OUTPUT_CSV}")
     print("\nTop selected candidates:")
     print(
         selected[
@@ -242,7 +226,7 @@ def main():
                 "edge_density",
                 "caption",
             ]
-        ].to_string(index=False)
+        ].head(20).to_string(index=False)
     )
 
 
