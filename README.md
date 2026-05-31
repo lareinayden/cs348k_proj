@@ -72,7 +72,7 @@ Six reconstruction configurations on the 40-image subset:
 
 ### Hyperparameter sweeps (conditioning strength)
 
-We sweep **Classifier-Free Guidance (CFG)** (e.g., 3.0 vs. 7.5–10.0) and **ControlNet conditioning scale** for structural configs to see how strongly the model follows each signal vs. its prior.
+We sweep **Classifier-Free Guidance (CFG)** (3.0 / 5.0 / 7.5 / 10.0) for text-conditioned configs **1, 2, 5, 6**, and **ControlNet conditioning scale** (0.5 / 1.0 / 1.5 / 2.0) for structural configs **3–6**. Configs 3–4 use an empty prompt, so CFG does not affect text guidance; ControlNet scale is the relevant knob for those runs.
 
 ### Experiment Results:
 
@@ -87,11 +87,99 @@ Evaluations run on the **200-image COCO subset** (`data/selected_200`) against e
 | 5 | Multi-modal A | Dense | Canny edge map | 7.5 | 1.0 | 0.517 | 34.44 | 0.328 | 200-image mean; `logs/controlnet_canny_results.csv` |
 | 6 | Multi-modal B | Dense | Segmentation mask | 7.5 | 1.0 | 0.641 | 34.28 | 0.414 | 200-image mean; `logs/controlnet_seg_results.csv` |
 
-*All-CFG means (CFG 3 / 5 / 7.5 / 10, ControlNet scale 1.0 for structural configs): Config 1 — LPIPS 0.758, CLIP 24.0, DreamSim 0.683; Config 2 — 0.732, 33.5, 0.500; Config 3 — 0.545, 28.1, 0.442; Config 4 — 0.672, 23.9, 0.582; Config 5 — 0.519, 34.1, 0.332; Config 6 — 0.642, 34.2, 0.417.*
+*CFG sweep applies to text-conditioned configs **1, 2, 5, 6** only. Configs **3–4** use an empty prompt, so CFG has no meaningful text-guidance effect; we report them at **CFG 7.5, ControlNet scale 1.0** in the main table. ControlNet scale sweep (0.5 / 1.0 / 1.5 / 2.0) at CFG 7.5 writes to `outputs/controlNetScale/` and `logs/controlnet_scale_*_results.csv`.*
 
-*CFG and ControlNet scale columns: report the setting used per run (e.g., low CFG ≈ 3.0, high CFG ≈ 7.5–10.0; structural configs sweep ControlNet conditioning scale).*
+#### CFG sweep — configs 1, 2, 5, 6 (200-image means)
 
-**Cross-config takeaways (CFG 7.5, 200 images):**
+Bold = best CFG **for that config** on each metric. Configs 3–4 omitted (empty text → CFG inert).
+
+**LPIPS ↓** (lower is better)
+
+| CFG | Config 1 | Config 2 | Config 5 | Config 6 |
+|:---:|:--------:|:--------:|:--------:|:--------:|
+| 3.0 | **0.745** | 0.728 | 0.518 | 0.641 |
+| 5.0 | 0.754 | **0.727** | **0.513** | **0.640** |
+| 7.5 | 0.763 | 0.733 | 0.517 | 0.641 |
+| 10.0 | 0.768 | 0.738 | 0.528 | 0.647 |
+
+**CLIP-Score ↑** (higher is better)
+
+| CFG | Config 1 | Config 2 | Config 5 | Config 6 |
+|:---:|:--------:|:--------:|:--------:|:--------:|
+| 3.0 | 23.8 | 32.8 | 33.4 | 33.6 |
+| 5.0 | 23.9 | 33.6 | 34.1 | 34.4 |
+| 7.5 | 24.1 | 33.8 | 34.4 | 34.3 |
+| 10.0 | **24.2** | **33.8** | **34.4** | **34.5** |
+
+**DreamSim ↓** (lower is better)
+
+| CFG | Config 1 | Config 2 | Config 5 | Config 6 |
+|:---:|:--------:|:--------:|:--------:|:--------:|
+| 3.0 | **0.675** | 0.503 | 0.340 | 0.421 |
+| 5.0 | 0.682 | **0.497** | **0.326** | 0.415 |
+| 7.5 | 0.687 | 0.501 | 0.328 | **0.414** |
+| 10.0 | 0.686 | 0.500 | 0.335 | 0.419 |
+
+**Best CFG per config (by metric):**
+
+| Config | Best CFG — LPIPS ↓ | Best CFG — CLIP ↑ | Best CFG — DreamSim ↓ |
+|:------:|:------------------:|:-----------------:|:---------------------:|
+| 1 Sparse text | **3.0** (0.745) | **10.0** (24.2) | **3.0** (0.675) |
+| 2 Dense text | **5.0** (0.727) | **10.0** (33.8) | **5.0** (0.497) |
+| 5 Dense + Canny | **5.0** (0.513) | **7.5 / 10.0** (34.4) | **5.0** (0.326) |
+| 6 Dense + seg | **5.0** (0.640) | **10.0** (34.5) | **7.5** (0.414) |
+
+**CFG takeaways (configs 1, 2, 5, 6):**
+- **Text-only (1–2):** Higher CFG improves CLIP but hurts perceptual metrics. Config 1 prefers **CFG 3.0** for LPIPS/DreamSim; Config 2 splits **CFG 5.0** (perceptual) vs **CFG 10.0** (CLIP).
+- **Multi-modal (5–6):** **CFG 5.0** is best for LPIPS and DreamSim; **CFG 7.5–10.0** is best for CLIP. **CFG 7.5** is a practical compromise for Config 5 (near-best on all three metrics).
+- **Overall:** No single CFG wins every metric. **CFG 5.0** favors perceptual reconstruction; **CFG 10.0** favors CLIP on dense-text runs (2, 5, 6).
+
+#### ControlNet scale sweep — configs 3, 4, 5, 6 (CFG 7.5 fixed; 200-image means)
+
+Bold = best ControlNet scale **for that config** on each metric. Source: `logs/controlnet_scale_*_results.csv`.
+
+**LPIPS ↓** (lower is better)
+
+| ControlNet scale | Config 3 | Config 4 | Config 5 | Config 6 |
+|:----------------:|:--------:|:--------:|:--------:|:--------:|
+| 0.5 | 0.642 | 0.719 | 0.610 | 0.685 |
+| 1.0 | 0.545 | 0.670 | 0.519 | 0.639 |
+| 1.5 | **0.521** | 0.659 | **0.500** | 0.629 |
+| 2.0 | 0.523 | **0.656** | 0.504 | **0.624** |
+
+**CLIP-Score ↑** (higher is better)
+
+| ControlNet scale | Config 3 | Config 4 | Config 5 | Config 6 |
+|:----------------:|:--------:|:--------:|:--------:|:--------:|
+| 0.5 | 24.9 | 19.7 | **34.4** | 34.3 |
+| 1.0 | 27.9 | 24.0 | 34.3 | 34.4 |
+| 1.5 | **28.2** | **24.6** | 33.6 | **34.5** |
+| 2.0 | 27.2 | 24.1 | 32.0 | 33.9 |
+
+**DreamSim ↓** (lower is better)
+
+| ControlNet scale | Config 3 | Config 4 | Config 5 | Config 6 |
+|:----------------:|:--------:|:--------:|:--------:|:--------:|
+| 0.5 | 0.549 | 0.673 | 0.386 | 0.448 |
+| 1.0 | **0.435** | 0.582 | **0.329** | **0.412** |
+| 1.5 | 0.440 | **0.568** | 0.337 | 0.415 |
+| 2.0 | 0.480 | 0.575 | 0.389 | 0.417 |
+
+**Best ControlNet scale per config (by metric):**
+
+| Config | Best scale — LPIPS ↓ | Best scale — CLIP ↑ | Best scale — DreamSim ↓ |
+|:------:|:--------------------:|:-------------------:|:-----------------------:|
+| 3 Empty + Canny | **1.5** (0.521) | **1.5** (28.2) | **1.0** (0.435) |
+| 4 Empty + seg | **2.0** (0.656) | **1.5** (24.6) | **1.5** (0.568) |
+| 5 Dense + Canny | **1.5** (0.500) | **0.5** (34.4) | **1.0** (0.329) |
+| 6 Dense + seg | **2.0** (0.624) | **1.5** (34.5) | **1.0** (0.412) |
+
+**ControlNet scale takeaways (configs 3–6, CFG 7.5):**
+- **Empty text (3–4):** ControlNet scale is the primary conditioning knob (unlike CFG, which is inert with empty prompts). **Scale 0.5** under-follows structure and hurts all metrics. Raising scale to **1.5–2.0** improves LPIPS; Config 3 peaks at **1.5**, Config 4 at **2.0** for perceptual metrics.
+- **Multi-modal (5–6):** Stronger structure conditioning improves LPIPS (best at **1.5** for Config 5, **2.0** for Config 6) but can **reduce CLIP** at high scale — Config 5 CLIP drops **34.4 → 32.0** from scale 0.5 to 2.0. DreamSim is best at **scale 1.0** for both.
+- **Trade-off:** Scale **1.0–1.5** is a practical default — near-best perceptual metrics without the CLIP penalty of scale 2.0 on dense-text runs. For structure-only Config 3, **1.5** balances all three metrics; Config 4 benefits from pushing toward **1.5–2.0** since text cannot compensate.
+
+**Cross-config takeaways (CFG 7.5, ControlNet scale 1.0, 200 images):**
 - **Structure vs. text alone:** Empty + Canny (3) lowers LPIPS **~0.73 → 0.55** and DreamSim **~0.50 → 0.43** vs. dense text (2).
 - **Canny vs. seg mask (3 vs. 4):** Canny wins on all mean metrics (LPIPS **0.545 vs. 0.671**, DreamSim **0.432 vs. 0.583**, CLIP **28.2 vs. 23.9**).
 - **Multi-modal synergy (5 vs. 3):** Adding dense text to Canny improves CLIP **28.2 → 34.4** and perceptual metrics (LPIPS **0.545 → 0.517**, DreamSim **0.432 → 0.328**).
@@ -164,7 +252,7 @@ Adding structure to dense text strongly favors **Config 5**; **Config 6** beats 
 | Research question | Gap | Comment |
 |-------------------|-----|----------------|
 | **Perceptual efficacy** — mask vs. Canny vs. text | Addressed | Configs 2–4 win-rate done; Canny (3) beats seg (4) on structure-only; dense text wins CLIP |
-| **Semantic vs. structural trade-offs** | Done | Full CFG sweep (3–10) for all configs; see experiment table and win-rate section |
+| **Semantic vs. structural trade-offs** | Done | CFG sweep for configs 1, 2, 5, 6; ControlNet scale sweep for 3–6; see experiment table |
 | Sparse text + Canny (variant of 3) | Not run separately | Config 3 used **empty** prompt; sparse entity list + Canny optional ablation |
 | Interactive refinement loop | Not started | Phase 3 |
 
@@ -244,13 +332,15 @@ cs348k_proj/
 │   ├── baseline_semantic_dense_results.csv    # Config 2
 │   ├── baseline_structural_seg_results.csv  # Config 4
 │   ├── controlnet_canny_results.csv   # Config 5
-│   └── controlnet_seg_results.csv     # Config 6 (CFG sweep)
+│   ├── controlnet_seg_results.csv     # Config 6 (CFG sweep)
+│   └── controlnet_scale_*_results.csv  # ControlNet scale sweep (CFG 7.5)
 ├── outputs/baseline_semantic_sparse/  # Config 1 generations
 ├── outputs/baseline_semantic_dense/   # Config 2 generations
 ├── outputs/baseline_structural_canny/  # Config 3: empty text + Canny
 ├── outputs/baseline_structural_seg/   # Config 4: empty text + seg mask
 ├── outputs/controlnet_canny/     # Config 5: dense text + Canny
 ├── outputs/controlnet_seg/       # Config 6: dense text + seg mask
+├── outputs/controlNetScale/      # ControlNet scale sweep (CFG 7.5; configs 3–6)
 └── models/                       # Local pretrained weights (CLIP/DINO/DreamSim-related assets, etc.)
 ```
 
@@ -293,7 +383,12 @@ python scripts/run_controlnet_canny_batch.py --modality empty
 
 # Config 5 — Multi-modal A (dense caption + Canny)
 python scripts/run_controlnet_canny_batch.py --modality dense
+
+# ControlNet scale sweep at CFG 7.5 (separate outputs/controlNetScale/ + logs/controlnet_scale_*_results.csv)
+python scripts/run_controlnet_canny_batch.py --modality empty --guidance-scales 7.5 --controlnet-scales 0.5 1.0 1.5 2.0 --controlnet-scale-sweep
 ```
+
+Pass `--controlnet-scale-sweep` to write scale-sweep runs under `outputs/controlNetScale/` with separate CSVs in `logs/` (e.g. `controlnet_scale_baseline_structural_canny_results.csv`). Main CFG sweep stays in the default output folders and result CSVs. Already-completed combos are skipped on re-run.
 
 ### `scripts/run_controlnet_seg_batch.py`
 
@@ -312,7 +407,7 @@ python scripts/run_controlnet_seg_batch.py --modality empty
 python scripts/run_controlnet_seg_batch.py --modality dense
 ```
 
-Supports CFG sweep via `--guidance-scales 3.0 5.0 7.5 10.0`.
+Supports CFG and ControlNet scale sweeps (same defaults as Canny script). Resume-safe: skips rows already in the results CSV.
 
 ### `scripts/run_sd_text_batch.py`
 

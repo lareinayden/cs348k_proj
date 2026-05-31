@@ -10,8 +10,9 @@ Config 6 — Multi-modal B:
 Uses fixed selected images:
     data/selected/images/
 
-Supports CFG sweep:
+Supports CFG and ControlNet scale sweeps:
     --guidance-scales 3.0 5.0 7.5 10.0
+    --controlnet-scales 0.5 1.0 1.5 2.0
 """
 
 import argparse
@@ -24,6 +25,14 @@ from PIL import Image
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
 from transformers import AutoImageProcessor, UperNetForSemanticSegmentation
 
+from controlnet_batch_utils import (
+    DEFAULT_CFG_SCALES,
+    DEFAULT_CONTROLNET_SCALES,
+    append_result,
+    is_completed,
+    load_existing_results,
+    resolve_run_paths,
+)
 from evaluation import GenerativeEvaluator
 from caption_utils import get_coco_caption, get_dense_caption
 from image_utils import load_rgb_image, validate_selected_images
@@ -39,7 +48,6 @@ SEG_MODEL = "openmmlab/upernet-convnext-small"
 
 MAX_IMAGES = 200
 DEFAULT_STEPS = 20
-DEFAULT_CONTROL_SCALE = 1.0
 
 
 ADE_PALETTE = np.asarray([
@@ -162,26 +170,43 @@ def parse_args():
         help="empty = Config 4; dense = Config 6",
     )
     parser.add_argument("--max-images", type=int, default=MAX_IMAGES)
-    parser.add_argument("--guidance-scales", type=float, nargs="+", default=[7.5])
-    parser.add_argument("--controlnet-scales", type=float, nargs="+", default=[1.0])
+    parser.add_argument(
+        "--guidance-scales",
+        type=float,
+        nargs="+",
+        default=DEFAULT_CFG_SCALES,
+        help="CFG values to sweep (default: 3 5 7.5 10)",
+    )
+    parser.add_argument(
+        "--controlnet-scales",
+        type=float,
+        nargs="+",
+        default=DEFAULT_CONTROLNET_SCALES,
+        help="ControlNet conditioning scales to sweep (default: 0.5 1 1.5 2)",
+    )
     parser.add_argument("--num-inference-steps", type=int, default=DEFAULT_STEPS)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument(
+        "--controlnet-scale-sweep",
+        action="store_true",
+        help="Write to outputs/controlNetScale/ and logs/controlnet_scale_*_results.csv",
+    )
+    parser.add_argument("--output-root", type=Path, default=None)
+    parser.add_argument("--result-csv", type=Path, default=None)
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
 
-    if args.modality == "dense":
-        modality_name = "dense_text_plus_seg"
-        experiment_id = 6
-        output_root_base = PROJECT_ROOT / "outputs/controlnet_seg"
-        result_csv = PROJECT_ROOT / "logs/controlnet_seg_results.csv"
-    else:
-        modality_name = "empty_text_plus_seg"
-        experiment_id = 4
-        output_root_base = PROJECT_ROOT / "outputs/baseline_structural_seg"
-        result_csv = PROJECT_ROOT / "logs/baseline_structural_seg_results.csv"
+    output_root_base, result_csv, experiment_id, modality_name = resolve_run_paths(
+        PROJECT_ROOT,
+        args.modality,
+        pipeline="seg",
+        controlnet_scale_sweep=args.controlnet_scale_sweep,
+        output_root=args.output_root,
+        result_csv=args.result_csv,
+    )
 
     output_root_base.mkdir(parents=True, exist_ok=True)
     result_csv.parent.mkdir(parents=True, exist_ok=True)
@@ -195,7 +220,18 @@ def main():
     pipe = load_controlnet_seg_pipeline(device, dtype)
     evaluator = GenerativeEvaluator(device=device)
 
-    all_results = []
+    results_df = load_existing_results(result_csv)
+    total_combos = (
+        len(args.guidance_scales) * len(args.controlnet_scales) * len(selected_df)
+    )
+    skipped = 0
+
+    print(
+        f"Experiment {experiment_id} ({modality_name}), "
+        f"n={len(selected_df)}, "
+        f"CFG={args.guidance_scales}, ControlNet={args.controlnet_scales}, "
+        f"existing rows={len(results_df)}"
+    )
 
     for guidance_scale in args.guidance_scales:
         for controlnet_scale in args.controlnet_scales:
@@ -207,6 +243,10 @@ def main():
 
             for idx, row in selected_df.iterrows():
                 coco_id = int(row["coco_id"])
+                if is_completed(results_df, coco_id, guidance_scale, controlnet_scale):
+                    skipped += 1
+                    continue
+
                 dense_caption = get_dense_caption(row)
                 coco_caption = get_coco_caption(row)
                 image_path = resolve_selected_image_path(coco_id)
@@ -262,12 +302,12 @@ def main():
                     **scores,
                 }
 
-                all_results.append(result_row)
-                pd.DataFrame(all_results).to_csv(result_csv, index=False)
+                results_df = append_result(results_df, result_row)
+                results_df.to_csv(result_csv, index=False)
 
                 print(f"Scores: {scores}")
 
-    print(f"\nDone. Results saved to {result_csv}")
+    print(f"\nDone. Results saved to {result_csv} ({len(results_df)} rows, skipped {skipped}/{total_combos} combos)")
     print(f"Images saved to {output_root_base}")
 
 
