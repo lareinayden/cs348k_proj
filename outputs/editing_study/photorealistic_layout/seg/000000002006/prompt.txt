@@ -1,0 +1,5 @@
+COCO ID: 2006
+Task: photorealistic_layout
+Modality: seg
+
+City bus driving through pedestrian saturated area near crosswalk.. photorealistic image, natural lighting, detailed realistic objects, preserve the original scene layout.

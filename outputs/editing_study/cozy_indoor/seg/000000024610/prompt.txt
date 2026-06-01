@@ -1,0 +1,5 @@
+COCO ID: 24610
+Task: cozy_indoor
+Modality: seg
+
+There is a laptop computer in a room with a couch and a bookcase.. cozy warm interior style, soft lighting, wooden textures, comfortable home atmosphere, inviting and realistic.

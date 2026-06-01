@@ -1,0 +1,5 @@
+COCO ID: 39769
+Task: cartoon_style
+Modality: canny
+
+Two cats sleeping with a remote control near each of them.. colorful cartoon illustration style, soft outlines, simplified shapes, playful colors, stylized but recognizable.

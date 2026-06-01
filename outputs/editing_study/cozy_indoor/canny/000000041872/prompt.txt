@@ -1,0 +1,5 @@
+COCO ID: 41872
+Task: cozy_indoor
+Modality: canny
+
+A bedroom with  a large bed facing a fireplace that has a television over the top of it, in a shelf space.. cozy warm interior style, soft lighting, wooden textures, comfortable home atmosphere, inviting and realistic.

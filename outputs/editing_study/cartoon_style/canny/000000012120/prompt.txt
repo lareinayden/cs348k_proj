@@ -1,0 +1,5 @@
+COCO ID: 12120
+Task: cartoon_style
+Modality: canny
+
+A couple of women playing a game of tennis on a tennis court.. colorful cartoon illustration style, soft outlines, simplified shapes, playful colors, stylized but recognizable.

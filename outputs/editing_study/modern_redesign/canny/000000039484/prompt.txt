@@ -1,0 +1,5 @@
+COCO ID: 39484
+Task: modern_redesign
+Modality: canny
+
+A street full of cars that are driving and parked and a group of people sitting outside eating.. modern minimalist redesign, clean surfaces, bright lighting, elegant contemporary style, same object layout.

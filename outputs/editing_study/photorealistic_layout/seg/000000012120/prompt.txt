@@ -1,0 +1,5 @@
+COCO ID: 12120
+Task: photorealistic_layout
+Modality: seg
+
+A couple of women playing a game of tennis on a tennis court.. photorealistic image, natural lighting, detailed realistic objects, preserve the original scene layout.
