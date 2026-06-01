@@ -60,4 +60,9 @@ python scripts/run_controlnet_seg_batch.py \
   --controlnet-scales 0.5 1.0 1.5 2.0 \
   --controlnet-scale-sweep
 
+echo "Running final experiment — dense + Canny + seg (Config 7, CFG 5.0, ControlNet scale 1.5)..."
+python scripts/run_controlnet_multimodal_batch.py \
+  --guidance-scale 5.0 \
+  --controlnet-scale 1.5
+
 echo "All experiments finished."

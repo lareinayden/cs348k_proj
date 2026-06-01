@@ -62,13 +62,15 @@ Text tiers (semantic conditioning):
 - **Sparse text:** comma-separated COCO category names (entity list, minimal spatial wording)
 - **Dense text:** enriched captions from the `Dense Caption` column in `data/selected/selected_coco_candidates.csv`
 
-Six reconstruction configurations on the 40-image subset:
+Six reconstruction configurations on the 200-image subset, plus one **final triple-modal** run:
+
 1. **Baseline Semantic:** sparse text only
 2. **Advanced Semantic:** dense text only
 3. **Baseline Structural A:** empty text + Canny edge map
 4. **Baseline Structural B:** empty text + semantic segmentation mask
 5. **Multi-modal A:** dense text + Canny edge map
 6. **Multi-modal B:** dense text + semantic segmentation mask
+7. **Multi-modal C (final):** dense text + Canny + seg (dual ControlNet); **CFG 5.0**, **ControlNet scale 1.5**
 
 ### Hyperparameter sweeps (conditioning strength)
 
@@ -86,8 +88,9 @@ Evaluations run on the **200-image COCO subset** (`data/selected_200`) against e
 | 4 | Baseline Structural B | Empty | Segmentation mask | 7.5 | 1.0 | 0.671 | 23.86 | 0.583 | 200-image mean; `logs/baseline_structural_seg_results.csv` |
 | 5 | Multi-modal A | Dense | Canny edge map | 7.5 | 1.0 | 0.517 | 34.44 | 0.328 | 200-image mean; `logs/controlnet_canny_results.csv` |
 | 6 | Multi-modal B | Dense | Segmentation mask | 7.5 | 1.0 | 0.641 | 34.28 | 0.414 | 200-image mean; `logs/controlnet_seg_results.csv` |
+| 7 | Multi-modal C (final) | Dense | Canny + seg mask | 5.0 | 1.5 | **0.487** | 32.46 | 0.347 | 200-image mean; best LPIPS overall; `logs/controlnet_multimodal_results.csv` |
 
-*CFG sweep applies to text-conditioned configs **1, 2, 5, 6** only. Configs **3–4** use an empty prompt, so CFG has no meaningful text-guidance effect; we report them at **CFG 7.5, ControlNet scale 1.0** in the main table. ControlNet scale sweep (0.5 / 1.0 / 1.5 / 2.0) at CFG 7.5 writes to `outputs/controlNetScale/` and `logs/controlnet_scale_*_results.csv`.*
+*CFG sweep applies to text-conditioned configs **1, 2, 5, 6** only. Configs **3–4** use an empty prompt, so CFG has no meaningful text-guidance effect; we report them at **CFG 7.5, ControlNet scale 1.0** in the main table. **Config 7** uses sweep-tuned hyperparameters (**CFG 5.0**, **ControlNet scale 1.5** on both Canny and seg branches) rather than the main-table defaults. ControlNet scale sweep (0.5 / 1.0 / 1.5 / 2.0) at CFG 7.5 writes to `outputs/controlNetScale/` and `logs/controlnet_scale_*_results.csv`.*
 
 #### CFG sweep — configs 1, 2, 5, 6 (200-image means)
 
@@ -185,7 +188,26 @@ Bold = best ControlNet scale **for that config** on each metric. Source: `logs/c
 - **Multi-modal synergy (5 vs. 3):** Adding dense text to Canny improves CLIP **28.2 → 34.4** and perceptual metrics (LPIPS **0.545 → 0.517**, DreamSim **0.432 → 0.328**).
 - **Multi-modal synergy (6 vs. 4):** Dense caption + seg mask improves all metrics vs. empty + seg (LPIPS **0.671 → 0.641**, DreamSim **0.583 → 0.414**, CLIP **23.9 → 34.3**).
 - **Canny vs. seg multi-modal (5 vs. 6):** Dense + Canny wins on perceptual metrics (LPIPS **0.517 vs. 0.641**, DreamSim **0.328 vs. 0.414**); CLIP is comparable (**34.4 vs. 34.3**).
-- **Best overall:** Config **5** on LPIPS and DreamSim; Config **5** and **6** tie on CLIP.
+- **Best overall (main table, CFG 7.5 / CN 1.0):** Config **5** on LPIPS and DreamSim; Config **5** and **6** tie on CLIP.
+- **Final triple-modal (Config 7, CFG 5.0 / CN 1.5):** Combining dense text + Canny + seg yields the **best mean LPIPS (0.487)** across all configs — beating Config 5 at CFG 5.0 (**0.513**) and Config 5 at CFG 7.5 / CN 1.5 (**0.500**). DreamSim (**0.347**) sits between Config 5 (**0.326**) and Config 6 (**0.415**). CLIP (**32.5**) drops vs. dual single-structure runs (**~34.1–34.3**), consistent with the scale-sweep trade-off where stronger structural conditioning improves perceptual metrics at the cost of CLIP.
+
+#### Config 7 — final triple-modal run (CFG 5.0, ControlNet scale 1.5)
+
+Dense text + dual ControlNet (Canny + seg), using hyperparameters chosen from the CFG and ControlNet scale sweeps. Source: `logs/controlnet_multimodal_results.csv` (200 images).
+
+| Metric | Config 5 (dense + Canny) | Config 6 (dense + seg) | Config 7 (dense + Canny + seg) |
+|--------|:------------------------:|:------------------------:|:------------------------------:|
+| CFG | 5.0 | 5.0 | 5.0 |
+| ControlNet scale | 1.0 | 1.0 | **1.5** (both branches) |
+| LPIPS ↓ | 0.513 | 0.640 | **0.487** |
+| CLIP-Score ↑ | **34.06** | **34.35** | 32.46 |
+| DreamSim ↓ | **0.326** | 0.415 | 0.347 |
+
+**Config 7 takeaways:**
+- **LPIPS:** Triple-modal wins — adding both structural signals together beats either branch alone at matched CFG.
+- **DreamSim:** Config 7 beats Config 6 but trails Config 5; dual structure helps vs. seg-only multi-modal but Canny-only still has the edge on perceptual distance.
+- **CLIP:** Both structural branches at scale 1.5 pull CLIP down ~1.5–2 points vs. Configs 5–6 at CN 1.0 — same perceptual-vs-semantic trade-off seen in the ControlNet scale sweep.
+- **Win-rate (5 vs 6 vs 7, CFG 5.0):** Config **7** **43.3%**, Config **5** **41.2%**, Config **6** **15.5%** (600 points; CN 1.0 for 5/6, 1.5 for 7).
 
 #### Modality win-rate comparisons (200-image subset, all CFG)
 
@@ -226,6 +248,16 @@ Canny (3) dominates overall; dense text (2) wins CLIP on most images; seg alone 
 
 Adding structure to dense text strongly favors **Config 5**; **Config 6** beats text-only (2) but trails Canny multi-modal (5) at all CFG values.
 
+**Config 5 vs 6 vs 7** (dense + Canny vs dense + seg vs dense + Canny + seg; CFG 5.0):
+
+| Config | ControlNet scale | LPIPS ↓ | CLIP ↑ | DreamSim ↓ | Win-rate |
+|:------:|:----------------:|:-------:|:------:|:----------:|:--------:|
+| 5 (dense + Canny) | 1.0 | 0.513 | **34.06** | **0.326** | 41.2% |
+| 6 (dense + seg) | 1.0 | 0.640 | **34.35** | 0.415 | 15.5% |
+| **7 (dense + Canny + seg)** | **1.5** | **0.487** | 32.46 | 0.347 | **43.3%** |
+
+Config **7** edges Config **5** on overall win-rate and achieves the best mean LPIPS; Config **5** still wins on DreamSim and CLIP at CN 1.0.
+
 **Checkpoint 1 reference** (single image; `logs/evaluation_1.json`): target vs. itself — LPIPS 0.00, DreamSim 0.00; vs. noise — 0.89 / 0.90; vs. blank — 0.84 / 0.93. All generative configs beat trivial failure baselines on CLIP-Score.
 
 ### Progress on Project Goals:
@@ -239,13 +271,15 @@ Adding structure to dense text strongly favors **Config 5**; **Config 6** beats 
 | Text-only SD (Configs 1–2) | Done | `scripts/run_sd_text_batch.py`; `logs/baseline_semantic_*_results.csv` |
 | ControlNet-Canny (Configs 3 & 5) | Done | Empty + dense text variants; `logs/baseline_structural_canny_results.csv`, `logs/controlnet_canny_results.csv` |
 | ControlNet-Seg (Configs 4 & 6) | Done | Empty + dense text variants; `logs/baseline_structural_seg_results.csv`, `logs/controlnet_seg_results.csv` |
+| Triple-modal (Config 7) | Done | Dense + Canny + seg; CFG 5.0 / CN 1.5; `logs/controlnet_multimodal_results.csv` |
 | Perceptual efficacy (text vs. edge vs. mask) | Done | Single-modality configs 2–4 scored; pairwise win-rate in `logs/modality_comparison_234_winrate.txt` |
-| Multi-modal synergy (text + structure) | Done | Configs 5 & 6 vs. 3 & 4; dense text improves both Canny and seg paths |
+| Multi-modal synergy (text + structure) | Done | Configs 5 & 6 vs. 3 & 4; Config 7 triple-modal final run |
 
 - **Text-only (Configs 1 vs. 2):** Dense captions raise CLIP **24.1 → 33.8** and lower DreamSim **0.69 → 0.50** at CFG 7.5; LPIPS similar (~0.76 vs ~0.73).
 - **Structure-only (Config 3):** Empty prompt + Canny reaches LPIPS **0.55**, DreamSim **0.43**, CLIP **28.2** — large perceptual gain over text-only, with moderate CLIP.
 - **Multi-modal (Config 5 vs. 3):** Dense caption + Canny improves CLIP **28.2 → 34.4** and perceptual metrics vs. empty + Canny.
 - **Multi-modal (Config 6 vs. 4):** Dense caption + seg mask raises CLIP **23.9 → 34.3** and lowers LPIPS/DreamSim vs. empty + seg.
+- **Final triple-modal (Config 7):** Dense + Canny + seg at CFG **5.0** / CN **1.5** achieves best mean LPIPS (**0.487**) but CLIP falls to **32.5** vs. **~34** for Configs 5–6.
 
 #### What is still open or not up to par
 
@@ -333,6 +367,7 @@ cs348k_proj/
 │   ├── baseline_structural_seg_results.csv  # Config 4
 │   ├── controlnet_canny_results.csv   # Config 5
 │   ├── controlnet_seg_results.csv     # Config 6 (CFG sweep)
+│   ├── controlnet_multimodal_results.csv  # Config 7 (final)
 │   └── controlnet_scale_*_results.csv  # ControlNet scale sweep (CFG 7.5)
 ├── outputs/baseline_semantic_sparse/  # Config 1 generations
 ├── outputs/baseline_semantic_dense/   # Config 2 generations
@@ -340,6 +375,7 @@ cs348k_proj/
 ├── outputs/baseline_structural_seg/   # Config 4: empty text + seg mask
 ├── outputs/controlnet_canny/     # Config 5: dense text + Canny
 ├── outputs/controlnet_seg/       # Config 6: dense text + seg mask
+├── outputs/controlnet_multimodal/  # Config 7: dense + Canny + seg
 ├── outputs/controlNetScale/      # ControlNet scale sweep (CFG 7.5; configs 3–6)
 └── models/                       # Local pretrained weights (CLIP/DINO/DreamSim-related assets, etc.)
 ```
@@ -408,6 +444,17 @@ python scripts/run_controlnet_seg_batch.py --modality dense
 ```
 
 Supports CFG and ControlNet scale sweeps (same defaults as Canny script). Resume-safe: skips rows already in the results CSV.
+
+### `scripts/run_controlnet_multimodal_batch.py`
+
+**Config 7** — dense text + **dual ControlNet** (Canny + seg simultaneously). Uses sweep-tuned defaults: **CFG 5.0**, **ControlNet scale 1.5** on both structural branches. 200-image results: LPIPS **0.487**, CLIP **32.46**, DreamSim **0.347**.
+
+```bash
+python scripts/run_controlnet_multimodal_batch.py
+python scripts/run_controlnet_multimodal_batch.py --guidance-scale 5.0 --controlnet-scale 1.5
+```
+
+Outputs: `outputs/controlnet_multimodal/cfg_5p0_control_1p5/<coco_id>/` and `logs/controlnet_multimodal_results.csv`.
 
 ### `scripts/run_sd_text_batch.py`
 

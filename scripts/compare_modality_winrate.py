@@ -49,6 +49,11 @@ CONFIG_REGISTRY = {
         "label": "Config 6 (dense + seg mask)",
         "csv": PROJECT_ROOT / "logs/controlnet_seg_results.csv",
     },
+    7: {
+        "name": "dense_canny_seg",
+        "label": "Config 7 (dense + Canny + seg)",
+        "csv": PROJECT_ROOT / "logs/controlnet_multimodal_results.csv",
+    },
 }
 
 METRICS = {
