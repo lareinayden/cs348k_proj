@@ -261,91 +261,22 @@ Canny (3) dominates overall; dense text (2) wins CLIP on most images; seg alone 
 
 Adding structure to dense text strongly favors **Config 5**; **Config 6** beats text-only (2) but trails Canny multi-modal (5) at all CFG values.
 
-**Config 5 vs 6 vs 7** (dense + Canny vs dense + seg vs dense + Canny + seg; CFG 7.5 / ControlNet 1.0):
+### What we have demonstrated so far
 
-| Config | ControlNet scale | LPIPS ↓ | CLIP ↑ | DreamSim ↓ | Win-rate |
-|:------:|:----------------:|:-------:|:------:|:----------:|:--------:|
-| 5 (dense + Canny) | 1.0 | 0.517 | **34.44** | 0.328 | 37.2% |
-| 6 (dense + seg) | 1.0 | 0.641 | 34.28 | 0.414 | 13.3% |
-| **7 (dense + Canny + seg)** | 1.0 | **0.501** | 34.33 | **0.321** | **49.5%** |
+- **End-to-end reconstruction evaluation pipeline**: batch generation + automatic evaluation (LPIPS ↓, DreamSim ↓, CLIP-Score ↑) with per-image logging and aggregate tables.
+- **A reproducible COCO testbed**: a fixed **200-image subset** (`data/selected_200`) with paired targets and dense captions, plus resume-safe scripts writing outputs under `outputs/` and metrics under `logs/`.
+- **Semantic vs. structural trade-offs**:
+  - Dense captions increase semantic alignment (CLIP) vs. sparse text (Configs 1–2).
+  - Structural Canny guidance improves perceptual similarity (LPIPS/DreamSim) vs. text-only (Config 3 vs. 2), at the cost of CLIP.
+- **Multi-modal synergy (text + structure)**:
+  - Dense + Canny and dense + seg improve over their structure-only counterparts (Configs 5 vs. 3; 6 vs. 4).
+- **Hyperparameter behavior at scale**:
+  - CFG sweep (1, 2, 5, 6): perceptual metrics prefer moderate CFG; very high CFG mainly helps CLIP.
+  - ControlNet scale sweep (3–6): stronger structure usually helps LPIPS but can reduce CLIP at high scales.
+- **Triple-modal conditioning (Config 7)**:
+  - Dense + Canny + seg improves LPIPS/DreamSim over dense + Canny at **CFG 7.5 / CN 1.0**, and achieves best LPIPS overall at the sweep-tuned setting (**CFG 5.0 / CN 1.5**).
 
-At the main-table default setting (**CFG 7.5 / CN 1.0**), Config **7** increases overall win-rate substantially and improves both perceptual metrics vs. Config 5, while keeping CLIP essentially tied.
-
-**Checkpoint 1 reference** (single image; `logs/evaluation_1.json`): target vs. itself — LPIPS 0.00, DreamSim 0.00; vs. noise — 0.89 / 0.90; vs. blank — 0.84 / 0.93. All generative configs beat trivial failure baselines on CLIP-Score.
-
-### Progress on Project Goals:
-
-#### What we have demonstrated so far
-
-| Area | Status | Evidence |
-|------|--------|----------|
-| Evaluation pipeline (LPIPS, CLIP-Score, DreamSim) | Done | `scripts/evaluation.py`; sanity checks in `logs/evaluation_1.json` |
-| Test subset & conditioning data | Done | 200 images in `data/selected_200`; outputs under `outputs/` |
-| Text-only SD (Configs 1–2) | Done | `scripts/run_sd_text_batch.py`; `logs/baseline_semantic_*_results.csv` |
-| ControlNet-Canny (Configs 3 & 5) | Done | Empty + dense text variants; `logs/baseline_structural_canny_results.csv`, `logs/controlnet_canny_results.csv` |
-| ControlNet-Seg (Configs 4 & 6) | Done | Empty + dense text variants; `logs/baseline_structural_seg_results.csv`, `logs/controlnet_seg_results.csv` |
-| Triple-modal (Config 7) | Done | Dense + Canny + seg; CFG 5.0 / CN 1.5; `logs/controlnet_multimodal_results.csv` |
-| Perceptual efficacy (text vs. edge vs. mask) | Done | Single-modality configs 2–4 scored; pairwise win-rate in `logs/modality_comparison_234_winrate.txt` |
-| Multi-modal synergy (text + structure) | Done | Configs 5 & 6 vs. 3 & 4; Config 7 triple-modal final run |
-
-- **Text-only (Configs 1 vs. 2):** Dense captions raise CLIP **24.1 → 33.8** and lower DreamSim **0.69 → 0.50** at CFG 7.5; LPIPS similar (~0.76 vs ~0.73).
-- **Structure-only (Config 3):** Empty prompt + Canny reaches LPIPS **0.55**, DreamSim **0.43**, CLIP **28.2** — large perceptual gain over text-only, with moderate CLIP.
-- **Multi-modal (Config 5 vs. 3):** Dense caption + Canny improves CLIP **28.2 → 34.4** and perceptual metrics vs. empty + Canny.
-- **Multi-modal (Config 6 vs. 4):** Dense caption + seg mask raises CLIP **23.9 → 34.3** and lowers LPIPS/DreamSim vs. empty + seg.
-- **Final triple-modal (Config 7):** Dense + Canny + seg at CFG **5.0** / CN **1.5** achieves best mean LPIPS (**0.487**) but CLIP falls to **32.5** vs. **~34** for Configs 5–6.
-
-#### What is still open or not up to par
-
-| Research question | Gap | Comment |
-|-------------------|-----|----------------|
-| **Perceptual efficacy** — mask vs. Canny vs. text | Addressed | Configs 2–4 win-rate done; Canny (3) beats seg (4) on structure-only; dense text wins CLIP |
-| **Semantic vs. structural trade-offs** | Done | CFG sweep for configs 1, 2, 5, 6; ControlNet scale sweep for 3–6; see experiment table |
-| Sparse text + Canny (variant of 3) | Not run separately | Config 3 used **empty** prompt; sparse entity list + Canny optional ablation |
-| Interactive refinement loop | Not started | Phase 3 |
-
-### Success Criteria
-
-Success means ranking **which conditioning modality strongest reconstructs the target scene** under our metric framework—not achieving perfect pixel-level copies.
-
-- **Checkpoint 1:** Evaluation pipeline distinguishes failed generations (noise, blank) from plausible reconstructions.
-- **Checkpoint 2:** Batch reconstructions on the test subset, scored vs. targets, with tables and a progress summary.
-- **Final:** Completed experiment table and modality-vs-metric plots identifying the strongest semantic and structural conditioning signals; limitations of target-as-proxy intent stated clearly.
-
-## Implementation Roadmap
-
-### Phase 1: Evaluation Pipeline MVP
-
-- [x] Initialize LPIPS, CLIP-score, and DreamSim metric functions.
-
-- [x] Build a trivial baseline testing script.
-
-- [x] Verify the evaluation code correctly penalizes random noise and blank canvases against a target image.
-
-- [x] Standardize the data loader to extract target images and their corresponding ground-truth text captions (e.g., COCO JSON parsing).
-
-- [x] Selected 40 images from the COCO dataset with rich features and objects, clear canny edges, and detailed captions.
-
-### Phase 2: Checkpoint 2 — Generative Pipeline & Intermediate Results
-
-- [x] Set up the Stable Diffusion 1.5 + ControlNet pipeline (Canny and additional modalities as needed).
-
-- [x] Implement extraction scripts for spatial modalities (Canny edge maps per image). Sparse vs. dense text runs complete (`run_sd_text_batch.py`).
-
-- [x] Run batch generation on the test subset for an initial subset of experimental configurations. Present intermediate results as tables (`logs`, experiment table above).
-
-- [x] Summarize what is answered vs. still open relative to project goals ([Progress on Project Goals](#progress-on-project-goals)).
-
-### Phase 3: Generative Reconstruction & Final Analysis
-
-- [ ] Run hyperparameter sweeps (CFG; ControlNet conditioning scale for structural configs). Batch-evaluate all reconstructions and complete the experiment results table.
-
-- [ ] Generate final comparative plots (modality vs. LPIPS, CLIP-Score, DreamSim; CFG sweeps where applicable).
-
-- [ ] Answer which modality provides the strongest conditioning signal (semantic vs. structural vs. combined) using the evaluation framework.
-
-- [ ] Document limitations of target-as-proxy intent and what a future human study would add.
-
-### Nice-to-Haves
+### Future Works
 - Human study linking conditioning choice to perceived user intent (beyond target-as-proxy)
 - Automated prompt refinement from metric feedback
 - Visualization tools comparing modality contributions
@@ -529,3 +460,4 @@ Combine LPIPS, DreamSim, and CLIP-Score with qualitative target-vs-generated com
 
 **High computational cost**  
 Fixed 40-image subset; cache generations and sweep hyperparameters on a subset first.
+
