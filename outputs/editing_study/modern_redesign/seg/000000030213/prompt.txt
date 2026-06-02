@@ -1,0 +1,5 @@
+COCO ID: 30213
+Task: modern_redesign
+Modality: seg
+
+The picture shows the interior of a kitchen, with vintage refrigerator, stove, and other appliances.. modern minimalist redesign, clean surfaces, bright lighting, elegant contemporary style, same object layout.

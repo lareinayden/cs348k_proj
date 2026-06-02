@@ -1,0 +1,5 @@
+COCO ID: 7574
+Task: modern_redesign
+Modality: seg
+
+A kitchen with two sinks, a counter, detergent, a stove and a refrigerator in it.. modern minimalist redesign, clean surfaces, bright lighting, elegant contemporary style, same object layout.

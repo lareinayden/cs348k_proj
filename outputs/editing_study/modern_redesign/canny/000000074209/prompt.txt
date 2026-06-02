@@ -1,0 +1,5 @@
+COCO ID: 74209
+Task: modern_redesign
+Modality: canny
+
+A black and stainless steel kitchen with a snack bar and bar stools.. modern minimalist redesign, clean surfaces, bright lighting, elegant contemporary style, same object layout.

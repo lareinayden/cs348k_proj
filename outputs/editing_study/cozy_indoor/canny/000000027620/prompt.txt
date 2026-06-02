@@ -1,0 +1,5 @@
+COCO ID: 27620
+Task: cozy_indoor
+Modality: canny
+
+A laptop sitting on a desk next to a chair and another computer.. cozy warm interior style, soft lighting, wooden textures, comfortable home atmosphere, inviting and realistic.

@@ -1,0 +1,5 @@
+COCO ID: 31248
+Task: modern_redesign
+Modality: seg
+
+Living room with white chairs and couches, fireplace and books on bookshelves.. modern minimalist redesign, clean surfaces, bright lighting, elegant contemporary style, same object layout.

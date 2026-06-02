@@ -1,0 +1,5 @@
+COCO ID: 27620
+Task: photorealistic_layout
+Modality: canny
+
+A laptop sitting on a desk next to a chair and another computer.. photorealistic image, natural lighting, detailed realistic objects, preserve the original scene layout.

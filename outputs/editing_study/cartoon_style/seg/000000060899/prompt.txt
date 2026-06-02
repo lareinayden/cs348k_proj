@@ -1,0 +1,5 @@
+COCO ID: 60899
+Task: cartoon_style
+Modality: seg
+
+The young boy is playing in the living room of his house.. colorful cartoon illustration style, soft outlines, simplified shapes, playful colors, stylized but recognizable.

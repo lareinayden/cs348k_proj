@@ -1,0 +1,5 @@
+COCO ID: 25181
+Task: photorealistic_layout
+Modality: canny
+
+A train station with an awning is depicted with a train on the right platform.. photorealistic image, natural lighting, detailed realistic objects, preserve the original scene layout.

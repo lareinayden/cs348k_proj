@@ -1,0 +1,5 @@
+COCO ID: 31248
+Task: cozy_indoor
+Modality: seg
+
+Living room with white chairs and couches, fireplace and books on bookshelves.. cozy warm interior style, soft lighting, wooden textures, comfortable home atmosphere, inviting and realistic.
