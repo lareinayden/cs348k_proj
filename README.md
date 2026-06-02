@@ -71,7 +71,6 @@ Each modality loses different information: sparse text drops spatial relationshi
 
 **Generative core:** Stable Diffusion 1.5 [Rombach et al., 2022] for text-only runs; SD 1.5 + ControlNet [Zhang et al., 2023] (Canny and/or seg) for spatial conditioning. All weights frozen.
 
-![Reconstruction evaluation pipeline](figures/cs348k_pipeline_diagram.png)
 
 ### Outputs
 
@@ -105,8 +104,6 @@ We hold the **target image** fixed and vary only the conditioning modality. Reco
 | 5 | Multi-modal A | Dense | ✓ | — |
 | 6 | Multi-modal B | Dense | — | ✓ |
 | 7 | Multi-modal C | Dense | ✓ | ✓ |
-
-![Experiment configuration matrix](figures/cs348k_experiment_matrix.png)
 
 Text tiers:
 - **Sparse:** COCO category–level captions
@@ -277,10 +274,6 @@ Reference — Config **5** (dense + Canny, CFG 7.5 / CN 1.0): LPIPS **0.517**, C
 - **Seg-heavy (0.5 / 1.5) is harmful:** LPIPS **0.558** is worse than dense + Canny alone — high seg scale repeats the weakness of Config 6 (dense + seg only).
 - **Equal scales (1.0 / 1.0)** remain the best **balanced** default: best DreamSim, strong CLIP, and strong LPIPS vs. Config 5.
 
-```bash
-python scripts/run_controlnet_multimodal_batch.py --guidance-scale 7.5 \
-  --canny-controlnet-scale 1.5 --seg-controlnet-scale 0.5
-```
 
 **Config 7 takeaways:**
 - **Perceptual metrics (LPIPS/DreamSim):** Triple-modal is best at both settings; at **CFG 7.5 / CN 1.0**, it improves LPIPS **0.517 → 0.501** and DreamSim **0.328 → 0.321** vs. dense + Canny.
