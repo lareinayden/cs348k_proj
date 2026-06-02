@@ -94,5 +94,36 @@ def is_completed(
     return bool(mask.any())
 
 
+def is_multimodal_completed(
+    results_df: pd.DataFrame,
+    coco_id: int,
+    guidance_scale: float,
+    canny_scale: float,
+    seg_scale: float,
+) -> bool:
+    """Resume check for Config 7 (dual ControlNet with optional per-branch scales)."""
+    if results_df.empty:
+        return False
+
+    base = (results_df["coco_id"] == coco_id) & (
+        results_df["guidance_scale"] == guidance_scale
+    )
+
+    if {"canny_controlnet_scale", "seg_controlnet_scale"}.issubset(results_df.columns):
+        mask = (
+            base
+            & (results_df["canny_controlnet_scale"] == canny_scale)
+            & (results_df["seg_controlnet_scale"] == seg_scale)
+        )
+        if bool(mask.any()):
+            return True
+
+    if canny_scale == seg_scale and "controlnet_conditioning_scale" in results_df.columns:
+        mask = base & (results_df["controlnet_conditioning_scale"] == canny_scale)
+        return bool(mask.any())
+
+    return False
+
+
 def append_result(results_df: pd.DataFrame, row: dict) -> pd.DataFrame:
     return pd.concat([results_df, pd.DataFrame([row])], ignore_index=True)

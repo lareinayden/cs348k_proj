@@ -3,9 +3,11 @@ Batch Multi-ControlNet reconstruction — Config 7.
 
 Dense text + Canny edge map + semantic segmentation mask (dual ControlNet).
 
-Example:
+Examples:
   python scripts/run_controlnet_multimodal_batch.py
   python scripts/run_controlnet_multimodal_batch.py --guidance-scale 5.0 --controlnet-scale 1.5
+  python scripts/run_controlnet_multimodal_batch.py --guidance-scale 7.5 \\
+      --canny-controlnet-scale 1.5 --seg-controlnet-scale 0.75
 """
 
 import argparse
@@ -20,7 +22,11 @@ from conditioning_images import (
     make_canny_image,
     make_segmentation_image,
 )
-from controlnet_batch_utils import append_result, is_completed, load_existing_results
+from controlnet_batch_utils import (
+    append_result,
+    is_multimodal_completed,
+    load_existing_results,
+)
 from evaluation import GenerativeEvaluator
 from caption_utils import get_coco_caption, get_dense_caption
 from image_utils import load_rgb_image, validate_selected_images
@@ -45,7 +51,7 @@ DEFAULT_CFG = 5.0
 DEFAULT_CONTROLNET_SCALE = 1.5
 
 
-def scale_to_str(x):
+def scale_to_str(x: float) -> str:
     return str(x).replace(".", "p")
 
 
@@ -62,6 +68,38 @@ def resolve_selected_image_path(coco_id: int) -> Path:
     if not path.exists():
         raise FileNotFoundError(f"Selected image not found: {path}")
     return path
+
+
+def resolve_controlnet_scales(
+    controlnet_scale: float | None,
+    canny_scale: float | None,
+    seg_scale: float | None,
+) -> tuple[float, float]:
+    """Resolve per-branch scales; --controlnet-scale applies to any unset branch."""
+    default = (
+        controlnet_scale
+        if controlnet_scale is not None
+        else DEFAULT_CONTROLNET_SCALE
+    )
+    if canny_scale is None and seg_scale is None:
+        return default, default
+    canny = canny_scale if canny_scale is not None else default
+    seg = seg_scale if seg_scale is not None else default
+    return canny, seg
+
+
+def multimodal_output_subdir(
+    guidance_scale: float,
+    canny_scale: float,
+    seg_scale: float,
+) -> str:
+    cfg_part = f"cfg_{scale_to_str(guidance_scale)}"
+    if canny_scale == seg_scale:
+        return f"{cfg_part}_control_{scale_to_str(canny_scale)}"
+    return (
+        f"{cfg_part}_canny_{scale_to_str(canny_scale)}"
+        f"_seg_{scale_to_str(seg_scale)}"
+    )
 
 
 def load_multicontrolnet_pipeline(device, dtype):
@@ -89,7 +127,28 @@ def parse_args():
     )
     parser.add_argument("--max-images", type=int, default=MAX_IMAGES)
     parser.add_argument("--guidance-scale", type=float, default=DEFAULT_CFG)
-    parser.add_argument("--controlnet-scale", type=float, default=DEFAULT_CONTROLNET_SCALE)
+    parser.add_argument(
+        "--controlnet-scale",
+        type=float,
+        default=None,
+        help=(
+            "ControlNet scale for both branches when --canny-controlnet-scale / "
+            "--seg-controlnet-scale are omitted (default: 1.5). Also fills in any "
+            "single branch-specific scale that is omitted."
+        ),
+    )
+    parser.add_argument(
+        "--canny-controlnet-scale",
+        type=float,
+        default=None,
+        help="ControlNet conditioning scale for the Canny branch only.",
+    )
+    parser.add_argument(
+        "--seg-controlnet-scale",
+        type=float,
+        default=None,
+        help="ControlNet conditioning scale for the segmentation branch only.",
+    )
     parser.add_argument("--num-inference-steps", type=int, default=DEFAULT_STEPS)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--output-root", type=Path, default=OUTPUT_ROOT)
@@ -99,6 +158,12 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    canny_scale, seg_scale = resolve_controlnet_scales(
+        args.controlnet_scale,
+        args.canny_controlnet_scale,
+        args.seg_controlnet_scale,
+    )
 
     args.output_root.mkdir(parents=True, exist_ok=True)
     args.result_csv.parent.mkdir(parents=True, exist_ok=True)
@@ -115,25 +180,31 @@ def main():
     results_df = load_existing_results(args.result_csv)
     skipped = 0
 
-    cfg_dir = (
-        f"cfg_{scale_to_str(args.guidance_scale)}"
-        f"_control_{scale_to_str(args.controlnet_scale)}"
+    cfg_dir = multimodal_output_subdir(
+        args.guidance_scale, canny_scale, seg_scale
     )
     output_root = args.output_root / cfg_dir
     output_root.mkdir(parents=True, exist_ok=True)
 
-    cn_scales = [args.controlnet_scale, args.controlnet_scale]
+    cn_scales = [canny_scale, seg_scale]
+    shared_scale = canny_scale if canny_scale == seg_scale else None
+
+    if canny_scale == seg_scale:
+        scale_msg = f"ControlNet scale={canny_scale} (Canny + Seg)"
+    else:
+        scale_msg = f"Canny scale={canny_scale}, Seg scale={seg_scale}"
 
     print(
         f"Experiment {EXPERIMENT_ID} ({MODALITY_NAME}), "
         f"n={len(selected_df)}, CFG={args.guidance_scale}, "
-        f"ControlNet scale={args.controlnet_scale} (Canny + Seg), "
-        f"existing rows={len(results_df)}"
+        f"{scale_msg}, existing rows={len(results_df)}"
     )
 
     for idx, row in selected_df.iterrows():
         coco_id = int(row["coco_id"])
-        if is_completed(results_df, coco_id, args.guidance_scale, args.controlnet_scale):
+        if is_multimodal_completed(
+            results_df, coco_id, args.guidance_scale, canny_scale, seg_scale
+        ):
             skipped += 1
             continue
 
@@ -189,9 +260,9 @@ def main():
             "modality": MODALITY_NAME,
             "experiment_id": EXPERIMENT_ID,
             "guidance_scale": args.guidance_scale,
-            "controlnet_conditioning_scale": args.controlnet_scale,
-            "canny_controlnet_scale": args.controlnet_scale,
-            "seg_controlnet_scale": args.controlnet_scale,
+            "controlnet_conditioning_scale": shared_scale,
+            "canny_controlnet_scale": canny_scale,
+            "seg_controlnet_scale": seg_scale,
             "num_inference_steps": args.num_inference_steps,
             **scores,
         }

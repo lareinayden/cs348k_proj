@@ -1,76 +1,112 @@
-# Comparative Evaluation of Conditioning Modalities for Target Scene Reconstruction
+# Comparative Evaluation of Conditioning Modalities using ControlNet
+
+**Project report:** [cs348k_project_report.pdf](cs348k_project_report.pdf) — full write-up with qualitative results, win-rate analysis, style-editing extension, and limitations.
 
 ## Team
-Sophia Huang (sophiacc)  
-Yixiao Zhang (yixiaoz)
+
+Sophia Huang (sophiacc@stanford.edu)  
+Yixiao Zhang (yixiaoz@stanford.edu)
 
 ## Summary
 
-Modern diffusion models such as ControlNet support a variety of conditioning modalities, including text prompts, edge maps, and semantic segmentation masks. While these modalities are widely available, it remains unclear which forms of conditioning provide the most useful **semantic and structural scene information** for guiding image generation. Understanding the strengths and limitations of each modality can help practitioners choose more effective conditioning strategies and avoid unnecessary inputs during generation.
+Modern diffusion models support multiple conditioning modalities, including text prompts, edge maps, and semantic segmentation masks. It remains unclear **how much useful scene information each modality preserves** and **how effectively diffusion models utilize that guidance**.
 
-We study this through a **generative reconstruction** task: given a target scene, we derive different conditioning signals (text, Canny edges, segmentation masks, and combinations) and measure how well a frozen Stable Diffusion + ControlNet pipeline recreates that target. We ask how well each modality preserves semantic and structural information **relevant to that target**, scored with perceptual and semantic metrics (LPIPS, CLIP-Score, DreamSim).
+We treat **image reconstruction not as an end goal, but as a controlled benchmark** to isolate and quantify the information capacity of different modalities. Given a target image from COCO, we extract sparse text, dense text, Canny edges, segmentation maps, and multi-modal combinations, then measure how accurately Stable Diffusion 1.5 + ControlNet restores the original scene using **LPIPS**, **CLIP-Score** (text–image), and **DreamSim**.
+
+We further extend this evaluation to **downstream style-editing tasks**, providing practical guidance on which modalities best balance structural fidelity with creative modification (see the [project report](cs348k_project_report.pdf), §3.11).
 
 ## Problem & Research Questions
 
 ### Problem
 
-Practitioners can supply text, edges, masks, or combinations to ControlNet-style models, but there is no clear guidance on which inputs carry the most reconstructive signal for a given scene. We compare modalities under a controlled reconstruction setup on a fixed COCO subset.
+Diffusion models such as Stable Diffusion generate images from text; ControlNet adds spatial signals (Canny edges, segmentation masks). Each modality encodes different scene information: text captures semantics and relationships, edges preserve boundaries, segmentation preserves region layout.
+
+**How much useful scene information does each conditioning modality preserve, and how effectively can Stable Diffusion utilize it?**
+
+Rather than perfect pixel reproduction, we use reconstruction to measure the **semantic and structural guidance** each representation provides when extracted from a target image. We also ask how these insights transfer to **targeted editing** (e.g., restyling a scene) where fidelity and flexibility trade off differently.
 
 ### Core question
 
-**Which modality provides the strongest conditioning signal for reconstructing a target scene?**
+**Which conditioning modality provides the strongest reconstructive signal for a target scene?**
 
 ### Supporting questions
 
-- **Semantic vs. structural signal:** Which single modality—sparse text, dense text, Canny edges, or segmentation masks—best preserves target semantics (CLIP-Score) and layout/perception (LPIPS, DreamSim)?
-- **Multi-modal synergy:** Does combining text with a structural modality improve reconstruction beyond either alone?
-- **Conditioning strength:** How do CFG and ControlNet conditioning scale affect the trade-off between following structure and preserving realistic texture?
+- **Semantic vs. structural signal:** Which single modality—sparse text, dense text, Canny edges, or segmentation masks—best preserves semantics (CLIP-Score) and layout/perception (LPIPS, DreamSim)?
+- **Multi-modal synergy:** Does combining dense text with a spatial modality improve reconstruction beyond either alone?
+- **Conditioning strength:** How do CFG and ControlNet scale affect the trade-off between prompt adherence, structural fidelity, and perceptual quality?
+- **Downstream editing:** Is the modality best for reconstruction also best for style transfer, or do less restrictive signals (e.g., segmentation) enable larger visual changes?
+
+### Goals and constraints
+
+**Goals.** Success means a method produces images that are **semantically aligned**, **structurally similar**, and **perceptually close** to the target—not pixel-perfect copies. We also seek a **practical reference configuration** (modality + hyperparameters) for reconstruction-oriented ControlNet use, and insights into **compact scene representations** (text + edges + masks as ultra-low-bitrate proxies for dense pixels).
+
+**Constraints.**
+
+- All models are **pretrained and frozen** (SD 1.5 + ControlNet).
+- Generation at **512×512**; dense captions shortened for CLIP’s **77-token** context window.
+- Fixed **200-image COCO subset** and consistent metric suite across all configs.
+- Canny/seg signals are **extracted from the target** (oracle conditioning)—we measure information capacity, not ease of human authoring.
+
+### Hypothesis
+
+We hypothesize that **spatial conditioning preserves structure better than text alone**, while **dense text preserves semantics better than sparse text**. Combining dense text with a spatial modality should improve reconstruction because the two information sources are **complementary**.
+
+### Crux of the problem
+
+Each modality loses different information: sparse text drops spatial relationships; dense text is limited by token length; Canny preserves boundaries but not labels or color; segmentation preserves layout but not texture. A fair comparison requires a **controlled setup** with the same target, metrics, and generation settings across all seven configurations.
 
 
 ## System Architecture
 
 ### Inputs
-Target dataset:
-- **COCO** (40-image subset in `data/selected`): diverse multi-object scenes with captions, edges, and masks derived from each target.
 
-Conditioning modalities (extracted from or paired with the target):
-- **Text:** sparse entity lists (COCO categories) or **dense** captions (`Dense Caption` column in `selected_coco_candidates.csv`)
-- **Canny edge maps:** high-frequency structure from the target
-- **Semantic segmentation masks:** region layout from the target (UperNet → ControlNet-seg)
+**Target dataset:** COCO 2017 validation images. We ranked candidates by object count, category diversity, spatial distribution, and Canny edge density, then selected **200 images** for final experiments (`data/selected_200/`). Each entry stores the target image, COCO metadata, sparse prompt, dense prompt (~50 words), Canny edge map, and semantic segmentation map.
 
-Generative core:
-- **Stable Diffusion 1.5 + ControlNet** (weights frozen): documented, controllable baseline given our compute budget.
+**Conditioning modalities** (extracted from or paired with the target):
+
+- **Sparse text:** short object-level COCO captions (main entities only)
+- **Dense text:** manually expanded captions with objects, spatial relations, and attributes (`dense_caption` in `data/selected_200/selected_coco_candidates_200_shortened.csv`)
+- **Canny edge maps:** object contours and local geometry (texture/color removed)
+- **Semantic segmentation masks:** region layout via UperNet → ControlNet-seg colormap
+
+**Generative core:** Stable Diffusion 1.5 [Rombach et al., 2022] for text-only runs; SD 1.5 + ControlNet [Zhang et al., 2023] (Canny and/or seg) for spatial conditioning. All weights frozen.
 
 ### Outputs
-Qualitative Analysis:
-- Reconstructed images for each modality configuration.
-- Visual comparisons (target vs reconstructions).
 
-Quantitative Evaluation Metrics (vs. target scene):
-- **LPIPS:** perceptual similarity to the target image
-- **CLIP-Score:** semantic alignment with the dense caption (proxy for scene semantics)
-- **DreamSim:** mid-level layout and perceptual similarity to the target
+- Reconstructed images per configuration under `outputs/`
+- Per-image and aggregate metrics in `logs/`
+- Qualitative comparisons (target vs. generations) — see [project report](cs348k_project_report.pdf), §3.7
+
+### Metrics (definition of success)
+
+We define success as guiding generation toward an image **close to the target** on multiple complementary axes:
+
+| Metric | What it measures | Direction |
+|--------|------------------|-----------|
+| **LPIPS** [Zhang et al., 2018] | Perceptual distance (deep features) | ↓ better |
+| **CLIP-Score** [Hessel et al., 2021] | **Text–image** alignment: generated image vs. dense caption (not CLIP-I) | ↑ better |
+| **DreamSim** [Fu et al., 2023] | Mid-level perceptual / layout similarity vs. target | ↓ better |
 
 
 ## Experimental Design & Success Criteria
 
-We hold the **target image** fixed and vary only the conditioning modality. Each configuration produces a reconstruction; metrics measure how much semantic and structural information from the target scene is preserved.
+We hold the **target image** fixed and vary only the conditioning modality. Reconstruction metrics act as **proxies for the information content** each modality preserves—not as a claim about real-world user-provided sketches or imperfect captions.
 
 ### Configurations
 
-Text tiers (semantic conditioning):
-- **Sparse text:** comma-separated COCO category names (entity list, minimal spatial wording)
-- **Dense text:** enriched captions from the `Dense Caption` column in `data/selected/selected_coco_candidates.csv`
+| ID | Configuration | Text | Canny | Segmentation |
+|:--:|---------------|:----:|:-----:|:------------:|
+| 1 | Baseline Semantic | Sparse | — | — |
+| 2 | Advanced Semantic | Dense | — | — |
+| 3 | Baseline Structural A | Empty | ✓ | — |
+| 4 | Baseline Structural B | Empty | — | ✓ |
+| 5 | Multi-modal A | Dense | ✓ | — |
+| 6 | Multi-modal B | Dense | — | ✓ |
+| 7 | Multi-modal C | Dense | ✓ | ✓ |
 
-Six reconstruction configurations on the 200-image subset, plus one **final triple-modal** run:
-
-1. **Baseline Semantic:** sparse text only
-2. **Advanced Semantic:** dense text only
-3. **Baseline Structural A:** empty text + Canny edge map
-4. **Baseline Structural B:** empty text + semantic segmentation mask
-5. **Multi-modal A:** dense text + Canny edge map
-6. **Multi-modal B:** dense text + semantic segmentation mask
-7. **Multi-modal C (final):** dense text + Canny + seg (dual ControlNet); **CFG 5.0**, **ControlNet scale 1.5**
+Text tiers:
+- **Sparse:** COCO category–level captions
+- **Dense:** enriched scene descriptions (generation prompt + CLIP-Score reference)
 
 ### Hyperparameter sweeps (conditioning strength)
 
@@ -188,14 +224,15 @@ Bold = best ControlNet scale **for that config** on each metric. Source: `logs/c
 - **Multi-modal synergy (5 vs. 3):** Adding dense text to Canny improves CLIP **28.2 → 34.4** and perceptual metrics (LPIPS **0.545 → 0.517**, DreamSim **0.432 → 0.328**).
 - **Multi-modal synergy (6 vs. 4):** Dense caption + seg mask improves all metrics vs. empty + seg (LPIPS **0.671 → 0.641**, DreamSim **0.583 → 0.414**, CLIP **23.9 → 34.3**).
 - **Canny vs. seg multi-modal (5 vs. 6):** Dense + Canny wins on perceptual metrics (LPIPS **0.517 vs. 0.641**, DreamSim **0.328 vs. 0.414**); CLIP is comparable (**34.4 vs. 34.3**).
-- **Best overall (main table, CFG 7.5 / CN 1.0):** Config **5** on LPIPS and DreamSim; Config **5** and **6** tie on CLIP.
+- **Best overall (main table, CFG 7.5 / CN 1.0):** Config **7** (equal Canny/seg scales) on LPIPS and DreamSim vs. Config **5**; CLIP essentially tied.
 - **Final triple-modal (Config 7, CFG 5.0 / CN 1.5):** Combining dense text + Canny + seg yields the **best mean LPIPS (0.487)** across all configs — beating Config 5 at CFG 5.0 (**0.513**) and Config 5 at CFG 7.5 / CN 1.5 (**0.500**). DreamSim (**0.347**) sits between Config 5 (**0.326**) and Config 6 (**0.415**). CLIP (**32.5**) drops vs. dual single-structure runs (**~34.1–34.3**), consistent with the scale-sweep trade-off where stronger structural conditioning improves perceptual metrics at the cost of CLIP.
 
 #### Config 7 — dense + Canny + seg (dual ControlNet)
 
-Source: `logs/controlnet_multimodal_results.csv` (200 images). We report two settings for Config 7:
+Source: `logs/controlnet_multimodal_results.csv` (200 images). Config 7 results include:
 - **Sweep-tuned final:** **CFG 5.0**, **ControlNet scale 1.5** (both branches)
 - **Main-table comparable:** **CFG 7.5**, **ControlNet scale 1.0** (both branches)
+- **Branch-scale ablation (CFG 7.5):** independent Canny / seg scales (see table below)
 
 ##### Config 7 at CFG 5.0 / ControlNet 1.5 (final)
 
@@ -217,10 +254,63 @@ Source: `logs/controlnet_multimodal_results.csv` (200 images). We report two set
 | CLIP-Score ↑ | **34.44** | 34.28 | 34.33 |
 | DreamSim ↓ | 0.328 | 0.414 | **0.321** |
 
+##### Config 7 branch-scale ablation (CFG 7.5; per-branch ControlNet scales)
+
+Independent Canny vs. seg scales via `--canny-controlnet-scale` / `--seg-controlnet-scale`. Outputs: `outputs/controlnet_multimodal/cfg_7p5_canny_*_seg_*/`.
+
+| Canny scale | Seg scale | LPIPS ↓ | CLIP ↑ | DreamSim ↓ | Win-rate* |
+|:-----------:|:---------:|:-------:|:------:|:----------:|:---------:|
+| 1.0 | 1.0 | 0.501 | 34.33 | **0.321** | 37.1% |
+| **1.5** | **0.5** | **0.489** | 33.56 | 0.334 | **42.1%** |
+| 0.5 | 1.5 | 0.558 | **34.43** | 0.359 | 13.3% |
+
+\*Win-rate among these three Config 7 variants only (600 points = 3 metrics × 200 images).
+
+Reference — Config **5** (dense + Canny, CFG 7.5 / CN 1.0): LPIPS **0.517**, CLIP **34.44**, DreamSim **0.328**.
+
+**Branch-scale takeaways:**
+- **Canny should dominate, seg should be light:** **1.5 / 0.5** achieves the best LPIPS among triple-modal runs (**0.489**) and the highest win-rate vs. the other splits, but trades ~0.9 CLIP points vs. equal scales and slightly worse DreamSim than **1.0 / 1.0**.
+- **Seg-heavy (0.5 / 1.5) is harmful:** LPIPS **0.558** is worse than dense + Canny alone — high seg scale repeats the weakness of Config 6 (dense + seg only).
+- **Equal scales (1.0 / 1.0)** remain the best **balanced** default: best DreamSim, strong CLIP, and strong LPIPS vs. Config 5.
+
+```bash
+python scripts/run_controlnet_multimodal_batch.py --guidance-scale 7.5 \
+  --canny-controlnet-scale 1.5 --seg-controlnet-scale 0.5
+```
+
 **Config 7 takeaways:**
 - **Perceptual metrics (LPIPS/DreamSim):** Triple-modal is best at both settings; at **CFG 7.5 / CN 1.0**, it improves LPIPS **0.517 → 0.501** and DreamSim **0.328 → 0.321** vs. dense + Canny.
-- **CLIP trade-off depends on scale:** At **CN 1.0**, CLIP stays essentially tied (34.33 vs 34.44); at **CN 1.5**, CLIP drops to **32.46**, matching the structural-strength trade-off seen in the ControlNet scale sweep.
+- **CLIP trade-off depends on scale:** At **CN 1.0**, CLIP stays essentially tied (34.33 vs 34.44); at **CN 1.5** (both branches), CLIP drops to **32.46**, matching the structural-strength trade-off seen in the ControlNet scale sweep.
+- **Branch asymmetry:** At CFG 7.5, favor **strong Canny + weak seg** for lowest LPIPS; avoid **weak Canny + strong seg**.
 - **Win-rate (5 vs 6 vs 7, CFG 7.5 / CN 1.0):** Config **7** **49.5%**, Config **5** **37.2%**, Config **6** **13.3%** (600 points).
+
+#### Best configuration recommendation
+
+Based on main-table results, CFG/ControlNet sweeps, branch-scale ablation, and win-rate analysis, our **recommended reconstruction configuration** is **Config 7** at matched defaults:
+
+| Component | Setting |
+|-----------|---------|
+| Text conditioning | Dense caption |
+| Spatial conditioning 1 | Canny edge map |
+| Spatial conditioning 2 | Semantic segmentation mask |
+| CFG | **7.5** |
+| Canny ControlNet scale | **1.0** |
+| Segmentation ControlNet scale | **1.0** |
+| LPIPS ↓ | **0.501** |
+| CLIP-Score ↑ | **34.33** |
+| DreamSim ↓ | **0.321** |
+
+**Rationale:** Dense + Canny alone is the strongest two-modality baseline; adding seg as a **secondary branch at moderate scale** further improves perceptual metrics without CLIP loss. Pushing both branches to CN **1.5** improves LPIPS slightly (0.487) but drops CLIP to **32.46**—we prefer **1.0 / 1.0** for balanced reconstruction. The three modalities are synergistic: text establishes semantics, Canny anchors fine boundaries, segmentation secures macro layout.
+
+#### Extension: style editing beyond reconstruction
+
+Reconstruction favors **Canny** (fine geometry). A small qualitative study on style-editing tasks (cartoon stylization, cozy-environment transformation, interior redesign, photorealistic enhancement) suggests the **best reconstruction modality is not always best for editing**:
+
+- **Canny:** best for reconstruction and geometric fidelity; can over-constrain shape/texture during stylization.
+- **Segmentation:** allows larger appearance changes while preserving coarse layout—often better for creative edits.
+- **Practical guideline:** use Canny when fidelity matters; segmentation when substantial style change is desired; combine when both matter.
+
+Details and figures: [project report](cs348k_project_report.pdf), §3.11.
 
 #### Modality win-rate comparisons (200-image subset, all CFG)
 
@@ -263,24 +353,27 @@ Adding structure to dense text strongly favors **Config 5**; **Config 6** beats 
 
 ### What we have demonstrated so far
 
-- **End-to-end reconstruction evaluation pipeline**: batch generation + automatic evaluation (LPIPS ↓, DreamSim ↓, CLIP-Score ↑) with per-image logging and aggregate tables.
-- **A reproducible COCO testbed**: a fixed **200-image subset** (`data/selected_200`) with paired targets and dense captions, plus resume-safe scripts writing outputs under `outputs/` and metrics under `logs/`.
-- **Semantic vs. structural trade-offs**:
-  - Dense captions increase semantic alignment (CLIP) vs. sparse text (Configs 1–2).
-  - Structural Canny guidance improves perceptual similarity (LPIPS/DreamSim) vs. text-only (Config 3 vs. 2), at the cost of CLIP.
-- **Multi-modal synergy (text + structure)**:
-  - Dense + Canny and dense + seg improve over their structure-only counterparts (Configs 5 vs. 3; 6 vs. 4).
-- **Hyperparameter behavior at scale**:
-  - CFG sweep (1, 2, 5, 6): perceptual metrics prefer moderate CFG; very high CFG mainly helps CLIP.
-  - ControlNet scale sweep (3–6): stronger structure usually helps LPIPS but can reduce CLIP at high scales.
-- **Triple-modal conditioning (Config 7)**:
-  - Dense + Canny + seg improves LPIPS/DreamSim over dense + Canny at **CFG 7.5 / CN 1.0**, and achieves best LPIPS overall at the sweep-tuned setting (**CFG 5.0 / CN 1.5**).
+- **Controlled reconstruction benchmark** on 200 COCO images quantifying how much semantic and structural information each modality preserves when fed to frozen SD 1.5 + ControlNet.
+- **Seven configurations** (text-only, structure-only, dual-modal, triple-modal) with CFG and ControlNet scale sweeps, branch-scale ablation, and per-image win-rate analysis.
+- **Hypothesis supported:** spatial > text for structure; dense > sparse for semantics; multi-modal combinations outperform single modalities; triple-modal (Config 7) is strongest at **CFG 7.5 / CN 1.0** on aggregate perceptual metrics.
+- **Practical reference config** (dense + Canny + seg, CFG 7.5, CN 1.0 both branches) for reconstruction-oriented ControlNet use.
+- **Downstream insight:** Canny dominates reconstruction; segmentation can be preferable for style-editing tasks where flexibility matters more than edge fidelity.
+- **Full narrative, qualitative figures, and limitations:** [project report](cs348k_project_report.pdf).
 
-### Future Works
-- Human study linking conditioning choice to perceived user intent (beyond target-as-proxy)
-- Automated prompt refinement from metric feedback
-- Visualization tools comparing modality contributions
-- Extension to additional ControlNet modalities or newer backbones
+### Future work
+
+- Human studies linking metric wins to perceived intent (beyond target-as-proxy conditioning).
+- User-provided sketches and imperfect layouts instead of oracle edge/seg maps.
+- Independent branch-scale sweeps and prompt-robustness tests under multi-modal settings.
+- Evaluation on newer architectures (SDXL, Flux) under the same benchmark.
+- Automated prompt refinement and visualization of modality contributions.
+
+### Team responsibilities
+
+| Member | Contributions |
+|--------|----------------|
+| **Sophia Huang** | Dataset selection, dense caption construction, ControlNet Canny/seg pipeline integration, experiment execution, evaluation analysis |
+| **Yixiao Zhang** | Text-only implementation, evaluation pipeline, metric validation, data verification, experiment execution, comparative analysis, result aggregation |
 
 ## Repository Layout
 
@@ -288,6 +381,7 @@ Top-level layout (paths are relative to the project root):
 
 ```
 cs348k_proj/
+├── cs348k_project_report.pdf     # Full project write-up (PDF)
 ├── data/coco/
 │   ├── info.json                 # Metadata for the local COCO subset (e.g. FiftyOne export: split, sample count)
 │   ├── raw/                      # Official COCO annotation JSON
@@ -296,7 +390,7 @@ cs348k_proj/
 │   │   └── person_keypoints_*.json
 │   └── validation/
 │       └── data/                 # Validation images aligned with COCO val IDs
-├── data/selected                 # Selected images by the heuristic
+├── data/selected_200/            # 200-image evaluation subset + captions
 ├── scripts/
 │   ├── evaluation.py             # Metric stack + trivial baselines
 │   ├── sparse_prompts.py         # COCO category lists for sparse prompts
@@ -350,7 +444,7 @@ Heuristic selection of data from the downloaded set with rich features and objec
 
 ### `scripts/run_controlnet_canny_batch.py`
 
-Batch ControlNet-Canny on `data/selected`. Dense generation uses the **`Dense Caption`** column; CLIP-Score always uses that dense caption as the semantic reference for the target scene.
+Batch ControlNet-Canny on `data/selected_200`. Dense generation uses the **`dense_caption`** column; CLIP-Score always uses that dense caption as the semantic reference.
 
 | Flag | Experiment |
 |------|------------|
@@ -372,7 +466,7 @@ Pass `--controlnet-scale-sweep` to write scale-sweep runs under `outputs/control
 
 ### `scripts/run_controlnet_seg_batch.py`
 
-Batch ControlNet-Seg on `data/selected`. Dense generation uses the **`Dense Caption`** column; CLIP-Score always uses that dense caption as the semantic reference for the target scene.
+Batch ControlNet-Seg on `data/selected_200`. Dense generation uses the **`dense_caption`** column; CLIP-Score always uses that dense caption as the semantic reference.
 
 | Flag | Experiment |
 |------|------------|
@@ -391,18 +485,22 @@ Supports CFG and ControlNet scale sweeps (same defaults as Canny script). Resume
 
 ### `scripts/run_controlnet_multimodal_batch.py`
 
-**Config 7** — dense text + **dual ControlNet** (Canny + seg simultaneously). Uses sweep-tuned defaults: **CFG 5.0**, **ControlNet scale 1.5** on both structural branches. 200-image results: LPIPS **0.487**, CLIP **32.46**, DreamSim **0.347**.
+**Config 7** — dense text + **dual ControlNet** (Canny + seg). **Recommended run:** CFG **7.5**, Canny scale **1.0**, seg scale **1.0** (LPIPS **0.501**, CLIP **34.33**, DreamSim **0.321**). Also supports per-branch scales and sweep-tuned settings (see Config 7 section above).
 
 ```bash
 python scripts/run_controlnet_multimodal_batch.py
 python scripts/run_controlnet_multimodal_batch.py --guidance-scale 5.0 --controlnet-scale 1.5
+
+# Per-branch ControlNet scales (e.g. stronger Canny, weaker seg)
+python scripts/run_controlnet_multimodal_batch.py --guidance-scale 7.5 \
+  --canny-controlnet-scale 1.5 --seg-controlnet-scale 0.75
 ```
 
-Outputs: `outputs/controlnet_multimodal/cfg_5p0_control_1p5/<coco_id>/` and `logs/controlnet_multimodal_results.csv`.
+Outputs: `outputs/controlnet_multimodal/<cfg_dir>/<coco_id>/` and `logs/controlnet_multimodal_results.csv`. When Canny and seg scales match, `<cfg_dir>` is `cfg_7p5_control_1p0`; when they differ, `cfg_7p5_canny_1p5_seg_0p75`. Resume matches on `canny_controlnet_scale` + `seg_controlnet_scale` in the CSV.
 
 ### `scripts/run_sd_text_batch.py`
 
-Text-only **Stable Diffusion 1.5** (no ControlNet) on the 40-image subset. Sparse prompts are COCO category lists (`sparse_prompts.py`); dense prompts use the **`Dense Caption`** column. CLIP-Score uses the dense caption as the semantic reference for the target scene.
+Text-only **Stable Diffusion 1.5** (no ControlNet) on the **200-image** subset. Sparse prompts use COCO captions; dense prompts use **`dense_caption`**. CLIP-Score uses the dense caption as the semantic reference.
 
 | Flag | Experiment |
 |------|------------|
@@ -453,11 +551,11 @@ The file pins package builds for reproducibility. Otherwise, you need roughly: P
 Use fixed checkpoints, documented CFG / ControlNet scales, and per-image metric logging.
 
 **Proxy intent vs. real user intent**  
-We use the target image and dense caption as stand-ins for “what should be preserved”; conclusions are about reconstructive conditioning signal, not live user preferences. A human study would be needed to validate intent in practice.
+Canny and segmentation maps are extracted from the target image (oracle conditioning). Conclusions measure **information capacity**, not ease of human authoring. See [project report](cs348k_project_report.pdf), §3.9 and §3.12.
 
 **Evaluation metrics may not fully capture scene fidelity**  
-Combine LPIPS, DreamSim, and CLIP-Score with qualitative target-vs-generated comparisons.
+Combine LPIPS, DreamSim, and CLIP-Score with qualitative target-vs-generated comparisons (report §3.7).
 
-**High computational cost**  
-Fixed 40-image subset; cache generations and sweep hyperparameters on a subset first.
+**Compute**  
+All 200-image experiments ran locally on Apple Silicon (MPS). Cache generations and use resume-safe batch scripts for long runs.
 
