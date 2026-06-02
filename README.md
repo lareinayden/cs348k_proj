@@ -71,6 +71,8 @@ Each modality loses different information: sparse text drops spatial relationshi
 
 **Generative core:** Stable Diffusion 1.5 [Rombach et al., 2022] for text-only runs; SD 1.5 + ControlNet [Zhang et al., 2023] (Canny and/or seg) for spatial conditioning. All weights frozen.
 
+![Reconstruction evaluation pipeline](figures/cs348k_pipeline_diagram.png)
+
 ### Outputs
 
 - Reconstructed images per configuration under `outputs/`
@@ -103,6 +105,8 @@ We hold the **target image** fixed and vary only the conditioning modality. Reco
 | 5 | Multi-modal A | Dense | ✓ | — |
 | 6 | Multi-modal B | Dense | — | ✓ |
 | 7 | Multi-modal C | Dense | ✓ | ✓ |
+
+![Experiment configuration matrix](figures/cs348k_experiment_matrix.png)
 
 Text tiers:
 - **Sparse:** COCO category–level captions
@@ -391,13 +395,22 @@ cs348k_proj/
 │   └── validation/
 │       └── data/                 # Validation images aligned with COCO val IDs
 ├── data/selected_200/            # 200-image evaluation subset + captions
+├── figures/
+│   ├── cs348k_pipeline_diagram.png   # Evaluation pipeline overview
+│   ├── cs348k_experiment_matrix.png  # Seven configuration matrix
+│   └── qualitative_grid.png          # Qualitative comparison grid
 ├── scripts/
-│   ├── evaluation.py             # Metric stack + trivial baselines
-│   ├── sparse_prompts.py         # COCO category lists for sparse prompts
-│   ├── run_sd_text_batch.py      # Configs 1–2: text-only SD 1.5 (--modality sparse|dense)
-│   └── run_controlnet_canny_batch.py  # Config 3 (empty+Canny) & Config 5 (dense+Canny)
-├── download.py                   # Pulls COCO-2017 validation subset via FiftyOne
-├── select_data.py                # Heuristic selection of data from downloaded set
+│   ├── download.py                 # Pull COCO-2017 validation subset via FiftyOne
+│   ├── select_data.py              # Heuristic 200-image subset selection
+│   ├── run_controlnet_canny.py     # Single-image ControlNet-Canny demo
+│   ├── evaluation.py               # Metric stack + trivial baselines
+│   ├── sparse_prompts.py           # COCO category lists for sparse prompts
+│   ├── run_sd_text_batch.py        # Configs 1–2: text-only SD 1.5
+│   ├── run_controlnet_canny_batch.py   # Config 3 & 5
+│   ├── run_controlnet_seg_batch.py     # Config 4 & 6
+│   ├── run_controlnet_multimodal_batch.py  # Config 7
+│   ├── run_all_experiments.sh      # Full experiment runner
+│   └── compare_modality_winrate.py # Win-rate analysis
 ├── logs/
 │   ├── evaluation_*.json         # Checkpoint 1 sanity runs
 │   ├── baseline_semantic_sparse_results.csv   # Config 1
@@ -421,9 +434,29 @@ cs348k_proj/
 
 ## Scripts
 
-### `download.py`
+### `scripts/download.py`
 
 Loads a small COCO-2017 **validation** split through [FiftyOne](https://voxel51.com/docs/fiftyone/) (`fiftyone.zoo.load_zoo_dataset("coco-2017", split="validation", max_samples=100)`). Use this if you need to (re)populate `data/coco/`; it requires a working FiftyOne install and sufficient disk space for the zoo download.
+
+```bash
+python scripts/download.py
+```
+
+### `scripts/select_data.py`
+
+Heuristic selection of **200 images** from the downloaded COCO validation set, ranked by object count, category diversity, spatial distribution, and Canny edge density. Writes `data/selected_200/` and `selected_coco_candidates_200.csv`.
+
+```bash
+python scripts/select_data.py
+```
+
+### `scripts/run_controlnet_canny.py`
+
+Minimal **single-image** ControlNet-Canny demo (one target → Canny map → generation). Useful for smoke-testing the pipeline before batch runs. Edit `image_path` in the script or adapt for your image ID.
+
+```bash
+python scripts/run_controlnet_canny.py
+```
 
 ### `scripts/evaluation.py`
 
@@ -437,10 +470,6 @@ Baseline **evaluation pipeline** for the three metrics above:
 ```bash
 python scripts/evaluation.py
 ```
-
-### `select_data.py`
-
-Heuristic selection of data from the downloaded set with rich features and objects, clear canny edges, and detailed captions.
 
 ### `scripts/run_controlnet_canny_batch.py`
 
